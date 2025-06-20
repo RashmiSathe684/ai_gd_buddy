@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 import PrivateRoute from './components/auth/PrivateRoute';
+import LandingPage from './components/landing/LandingPage';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import Dashboard from './components/dashboard/Dashboard';
@@ -18,15 +19,14 @@ function App() {
       <Router>
         <AuthProvider>
           <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-            <Navbar />
             <Routes>
+              <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-              <Route path="/topics" element={<PrivateRoute><TopicSelector /></PrivateRoute>} />
-              <Route path="/simulation/:topicId" element={<PrivateRoute><GDSimulation /></PrivateRoute>} />
-              <Route path="/feedback/:sessionId" element={<PrivateRoute><FeedbackSummary /></PrivateRoute>} />
+              <Route path="/dashboard" element={<PrivateRoute><><Navbar /><Dashboard /></></PrivateRoute>} />
+              <Route path="/topics" element={<PrivateRoute><><Navbar /><TopicSelector /></></PrivateRoute>} />
+              <Route path="/simulation/:topicId" element={<PrivateRoute><><Navbar /><GDSimulation /></></PrivateRoute>} />
+              <Route path="/feedback/:sessionId" element={<PrivateRoute><><Navbar /><FeedbackSummary /></></PrivateRoute>} />
             </Routes>
             <Toaster 
               position="top-right"
