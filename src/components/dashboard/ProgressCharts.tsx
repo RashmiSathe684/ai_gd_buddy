@@ -1,25 +1,13 @@
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { TrendingUp, BarChart3 } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
+import { UserData } from '../../services/userDataService';
 
-const ProgressCharts: React.FC = () => {
-  const progressData = [
-    { week: 'Week 1', score: 72, sessions: 3 },
-    { week: 'Week 2', score: 76, sessions: 4 },
-    { week: 'Week 3', score: 81, sessions: 5 },
-    { week: 'Week 4', score: 85, sessions: 6 },
-    { week: 'Week 5', score: 88, sessions: 4 },
-    { week: 'Week 6', score: 92, sessions: 5 },
-  ];
+interface ProgressChartsProps {
+  userData: UserData;
+}
 
-  const skillData = [
-    { skill: 'Communication', score: 85 },
-    { skill: 'Leadership', score: 78 },
-    { skill: 'Analysis', score: 92 },
-    { skill: 'Listening', score: 88 },
-    { skill: 'Confidence', score: 82 },
-  ];
-
+const ProgressCharts: React.FC<ProgressChartsProps> = ({ userData }) => {
   return (
     <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20">
       <div className="flex items-center justify-between mb-6">
@@ -36,7 +24,7 @@ const ProgressCharts: React.FC = () => {
           </h4>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={progressData}>
+              <LineChart data={userData.progressData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis 
                   dataKey="week" 
@@ -46,7 +34,7 @@ const ProgressCharts: React.FC = () => {
                 <YAxis 
                   stroke="#666"
                   fontSize={12}
-                  domain={[60, 100]}
+                  domain={[0, 100]}
                 />
                 <Tooltip 
                   contentStyle={{
@@ -77,7 +65,7 @@ const ProgressCharts: React.FC = () => {
           </h4>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={skillData} layout="horizontal">
+              <BarChart data={userData.skillBreakdown} layout="horizontal">
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis 
                   type="number" 
@@ -120,15 +108,17 @@ const ProgressCharts: React.FC = () => {
       {/* Summary Stats */}
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="text-center p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
-          <p className="text-2xl font-bold text-green-600">+18%</p>
+          <p className="text-2xl font-bold text-green-600">
+            {userData.sessionStats.improvementPercentage >= 0 ? '+' : ''}{userData.sessionStats.improvementPercentage}%
+          </p>
           <p className="text-sm text-gray-600">Improvement</p>
         </div>
         <div className="text-center p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl">
-          <p className="text-2xl font-bold text-blue-600">92%</p>
+          <p className="text-2xl font-bold text-blue-600">{userData.sessionStats.bestScore}%</p>
           <p className="text-sm text-gray-600">Best Score</p>
         </div>
         <div className="text-center p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
-          <p className="text-2xl font-bold text-purple-600">27</p>
+          <p className="text-2xl font-bold text-purple-600">{userData.sessionStats.completedSessions}</p>
           <p className="text-sm text-gray-600">Total Sessions</p>
         </div>
       </div>

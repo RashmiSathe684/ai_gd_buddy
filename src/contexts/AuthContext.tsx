@@ -8,6 +8,7 @@ import {
   updateProfile
 } from 'firebase/auth';
 import { auth } from '../services/firebase';
+import { initializeUserData } from '../services/userDataService';
 import toast from 'react-hot-toast';
 
 interface AuthContextType {
@@ -40,6 +41,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(result.user, { displayName: name });
+      
+      // Initialize user data in Firestore
+      await initializeUserData(result.user);
+      
       toast.success('Account created successfully!');
     } catch (error: any) {
       toast.error(error.message || 'Failed to create account');
@@ -49,7 +54,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Initialize user data if it doesn't exist (for existing users)
+      await initializeUserData(result.user);
+      
       toast.success('Welcome back!');
     } catch (error: any) {
       toast.error(error.message || 'Failed to sign in');

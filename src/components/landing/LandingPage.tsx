@@ -8,14 +8,15 @@ import {
   Award, 
   Play, 
   CheckCircle,
-  Star,
   ArrowRight,
   BookOpen,
   Mic,
   BarChart3,
   Target,
   Clock,
-  Globe
+  Globe,
+  Brain,
+  Zap
 } from 'lucide-react';
 
 const LandingPage: React.FC = () => {
@@ -79,13 +80,6 @@ const LandingPage: React.FC = () => {
     }
   ];
 
-  const stats = [
-    { number: '10,000+', label: 'Active Users' },
-    { number: '50,000+', label: 'Sessions Completed' },
-    { number: '95%', label: 'Success Rate' },
-    { number: '100+', label: 'Topics Available' }
-  ];
-
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -116,9 +110,6 @@ const LandingPage: React.FC = () => {
 
             <div className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">Features</a>
-              <a href="#how-it-works" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">How it Works</a>
-              <a href="#testimonials" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">Reviews</a>
-              <a href="#pricing" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">Pricing</a>
             </div>
 
             <Link
@@ -143,16 +134,6 @@ const LandingPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <motion.div variants={itemVariants} className="space-y-8">
                 <div className="space-y-4">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, duration: 0.5 }}
-                    className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
-                  >
-                    <Star className="h-4 w-4 mr-2" />
-                    #1 AI-Powered GD Practice Platform
-                  </motion.div>
-                  
                   <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
                     Master Group
                     <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -188,30 +169,16 @@ const LandingPage: React.FC = () => {
                     <span>Learn More</span>
                   </motion.button>
                 </div>
-
-                <div className="flex items-center space-x-6 text-sm text-gray-600">
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                    <span>Free to start</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                    <span>No credit card required</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                    <span>Instant feedback</span>
-                  </div>
-                </div>
               </motion.div>
 
               <motion.div 
                 variants={itemVariants}
                 className="relative"
               >
+                {/* Dynamic Virtual Discussion Space Visualization */}
                 <div className="relative bg-white/70 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20">
                   <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
-                    <Award className="h-12 w-12 text-white" />
+                    <Brain className="h-12 w-12 text-white" />
                   </div>
                   
                   <div className="space-y-6">
@@ -220,39 +187,102 @@ const LandingPage: React.FC = () => {
                         <Users className="h-6 w-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900">Live GD Session</h3>
-                        <p className="text-gray-600 text-sm">AI Healthcare Discussion</p>
+                        <h3 className="font-semibold text-gray-900">Virtual Discussion Space</h3>
+                        <p className="text-gray-600 text-sm">AI-Powered Group Discussion</p>
                       </div>
                     </div>
 
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
-                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                          You
-                        </div>
-                        <p className="text-sm text-gray-800">AI can revolutionize healthcare by improving diagnostic accuracy...</p>
-                      </div>
-                      
-                      <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                          🤖
-                        </div>
-                        <p className="text-sm text-gray-800">That's an excellent point! However, we should also consider...</p>
+                    {/* Interconnected Participants Visualization */}
+                    <div className="relative h-32 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        {/* Central Hub */}
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                          className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center"
+                        >
+                          <Zap className="h-4 w-4 text-white" />
+                        </motion.div>
+                        
+                        {/* Participant Nodes */}
+                        {[0, 1, 2, 3].map((index) => {
+                          const angle = (index * 90) * (Math.PI / 180);
+                          const radius = 40;
+                          const x = Math.cos(angle) * radius;
+                          const y = Math.sin(angle) * radius;
+                          
+                          return (
+                            <motion.div
+                              key={index}
+                              animate={{ 
+                                scale: [1, 1.2, 1],
+                                opacity: [0.7, 1, 0.7]
+                              }}
+                              transition={{ 
+                                duration: 2, 
+                                repeat: Infinity, 
+                                delay: index * 0.5 
+                              }}
+                              className="absolute w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                              style={{
+                                transform: `translate(${x}px, ${y}px)`
+                              }}
+                            >
+                              {index === 0 ? 'You' : `AI${index}`}
+                            </motion.div>
+                          );
+                        })}
+                        
+                        {/* Connection Lines */}
+                        <svg className="absolute inset-0 w-full h-full">
+                          {[0, 1, 2, 3].map((index) => {
+                            const angle = (index * 90) * (Math.PI / 180);
+                            const radius = 40;
+                            const x = Math.cos(angle) * radius + 64;
+                            const y = Math.sin(angle) * radius + 64;
+                            
+                            return (
+                              <motion.line
+                                key={index}
+                                x1="64"
+                                y1="64"
+                                x2={x}
+                                y2={y}
+                                stroke="url(#gradient)"
+                                strokeWidth="2"
+                                initial={{ pathLength: 0 }}
+                                animate={{ pathLength: 1 }}
+                                transition={{ 
+                                  duration: 1.5, 
+                                  delay: index * 0.3,
+                                  repeat: Infinity,
+                                  repeatType: "reverse"
+                                }}
+                              />
+                            );
+                          })}
+                          <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor="#3B82F6" />
+                              <stop offset="100%" stopColor="#8B5CF6" />
+                            </linearGradient>
+                          </defs>
+                        </svg>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200">
                       <div className="text-center">
-                        <p className="text-2xl font-bold text-blue-600">92%</p>
-                        <p className="text-xs text-gray-600">Score</p>
+                        <p className="text-2xl font-bold text-blue-600">Live</p>
+                        <p className="text-xs text-gray-600">Session</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-2xl font-bold text-green-600">4:32</p>
-                        <p className="text-xs text-gray-600">Speaking</p>
+                        <p className="text-2xl font-bold text-green-600">4</p>
+                        <p className="text-xs text-gray-600">Participants</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-2xl font-bold text-purple-600">8</p>
-                        <p className="text-xs text-gray-600">Points</p>
+                        <p className="text-2xl font-bold text-purple-600">AI</p>
+                        <p className="text-xs text-gray-600">Powered</p>
                       </div>
                     </div>
                   </div>
@@ -276,30 +306,6 @@ const LandingPage: React.FC = () => {
                 </motion.div>
               </motion.div>
             </div>
-          </div>
-        </section>
-
-        {/* Stats Section */}
-        <section className="py-16 bg-white/50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div 
-              variants={itemVariants}
-              className="grid grid-cols-2 lg:grid-cols-4 gap-8"
-            >
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <motion.p 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
-                  >
-                    {stat.number}
-                  </motion.p>
-                  <p className="text-gray-600 font-medium mt-2">{stat.label}</p>
-                </div>
-              ))}
-            </motion.div>
           </div>
         </section>
 
@@ -369,7 +375,7 @@ const LandingPage: React.FC = () => {
                 <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20">
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-white font-semibold">Your Progress</h3>
+                      <h3 className="text-white font-semibold">Skill Development</h3>
                       <Globe className="h-6 w-6 text-white/70" />
                     </div>
                     
@@ -426,49 +432,6 @@ const LandingPage: React.FC = () => {
           </div>
         </section>
 
-        {/* Testimonials Section */}
-        <section id="testimonials" className="py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div variants={itemVariants} className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                What Our Users Say
-              </h2>
-              <p className="text-xl text-gray-600">
-                Join thousands of satisfied users who have transformed their communication skills
-              </p>
-            </motion.div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {testimonials.map((testimonial, index) => (
-                <motion.div
-                  key={index}
-                  variants={itemVariants}
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20"
-                >
-                  <div className="flex items-center space-x-1 mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                  
-                  <p className="text-gray-800 mb-4">"{testimonial.content}"</p>
-                  
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-lg">
-                      {testimonial.avatar}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900">{testimonial.name}</p>
-                      <p className="text-gray-600 text-sm">{testimonial.role}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* CTA Section */}
         <section className="py-20 bg-gradient-to-r from-gray-900 to-blue-900">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -493,10 +456,6 @@ const LandingPage: React.FC = () => {
                   </motion.button>
                 </Link>
               </div>
-              
-              <p className="text-gray-400 text-sm">
-                No credit card required • Free forever • Start in 30 seconds
-              </p>
             </motion.div>
           </div>
         </section>
@@ -521,8 +480,6 @@ const LandingPage: React.FC = () => {
                 <h3 className="font-semibold mb-4">Product</h3>
                 <div className="space-y-2 text-sm text-gray-400">
                   <p>Features</p>
-                  <p>Pricing</p>
-                  <p>How it Works</p>
                   <p>FAQ</p>
                 </div>
               </div>
