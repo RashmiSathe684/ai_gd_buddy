@@ -5,11 +5,9 @@ import {
   Mic, 
   MicOff, 
   Play, 
-  Pause, 
   Square, 
   Clock, 
   Users, 
-  MessageSquare,
   Volume2,
   AlertCircle,
   CheckCircle,
@@ -60,7 +58,6 @@ const GDSimulation: React.FC = () => {
     ]
   };
 
-  // Simulate session timer
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (sessionStarted) {
@@ -71,7 +68,6 @@ const GDSimulation: React.FC = () => {
     return () => clearInterval(interval);
   }, [sessionStarted]);
 
-  // Simulate AI participant interactions
   useEffect(() => {
     if (sessionStarted && sessionPhase === 'discussion') {
       const speakingInterval = setInterval(() => {
@@ -90,17 +86,15 @@ const GDSimulation: React.FC = () => {
   const startSession = () => {
     setSessionStarted(true);
     setSessionPhase('introduction');
-    setTimeout(() => setSessionPhase('discussion'), 30000); // Move to discussion after 30s
+    setTimeout(() => setSessionPhase('discussion'), 30000);
   };
 
   const endSession = async () => {
     if (!currentUser) return;
-
     setSessionStarted(false);
     setSessionPhase('conclusion');
 
     try {
-      // Calculate overall score
       const overallScore = Math.round(
         (sessionData.participation + 
          sessionData.clarity + 
@@ -111,7 +105,6 @@ const GDSimulation: React.FC = () => {
          sessionData.confidence) / 7
       );
 
-      // Save session to database
       await addSession(currentUser.uid, {
         topicId: topicId || '1',
         topicTitle: topic.title,
@@ -127,12 +120,11 @@ const GDSimulation: React.FC = () => {
         overallScore,
         duration: Math.round(timeElapsed / 60),
         difficulty: topic.difficulty,
-        participants: aiParticipants.length + 1
+        participants: aiParticipants.length + 1,
+        timestamp: new Date() // ✅ Fixed timestamp issue
       });
 
       toast.success('Session completed and saved!');
-      
-      // Navigate to feedback page after a short delay
       setTimeout(() => {
         navigate(`/feedback/${topicId}`);
       }, 2000);
@@ -145,8 +137,6 @@ const GDSimulation: React.FC = () => {
   const handleVoiceInput = (transcript: string) => {
     if (transcript.trim()) {
       setUserContributions(prev => [...prev, transcript]);
-      
-      // Simulate real-time feedback updates
       setSessionData(prev => ({
         ...prev,
         participation: Math.min(100, prev.participation + 2),
@@ -158,30 +148,21 @@ const GDSimulation: React.FC = () => {
 
   const getPhaseTitle = () => {
     switch (sessionPhase) {
-      case 'introduction':
-        return 'Introduction Phase';
-      case 'discussion':
-        return 'Active Discussion';
-      case 'conclusion':
-        return 'Conclusion Phase';
-      default:
-        return 'Ready to Start';
+      case 'introduction': return 'Introduction Phase';
+      case 'discussion': return 'Active Discussion';
+      case 'conclusion': return 'Conclusion Phase';
+      default: return 'Ready to Start';
     }
   };
 
   const getPhaseColor = () => {
     switch (sessionPhase) {
-      case 'introduction':
-        return 'from-blue-500 to-cyan-500';
-      case 'discussion':
-        return 'from-green-500 to-emerald-500';
-      case 'conclusion':
-        return 'from-purple-500 to-pink-500';
-      default:
-        return 'from-gray-500 to-gray-600';
+      case 'introduction': return 'from-blue-500 to-cyan-500';
+      case 'discussion': return 'from-green-500 to-emerald-500';
+      case 'conclusion': return 'from-purple-500 to-pink-500';
+      default: return 'from-gray-500 to-gray-600';
     }
   };
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <motion.div
