@@ -10,13 +10,16 @@ import {
   CheckCircle,
   ArrowRight,
   BookOpen,
-  Mic,
   BarChart3,
   Target,
   Clock,
   Globe,
   Brain,
-  Zap
+  Zap,
+  FileText,
+  Star,
+  Trophy,
+  Briefcase
 } from 'lucide-react';
 
 const LandingPage: React.FC = () => {
@@ -28,9 +31,9 @@ const LandingPage: React.FC = () => {
       color: 'from-blue-500 to-cyan-500'
     },
     {
-      icon: Mic,
-      title: 'Voice Analysis',
-      description: 'Get real-time feedback on your speaking pace, clarity, and communication effectiveness',
+      icon: FileText,
+      title: 'Advanced Text Analysis',
+      description: 'Get real-time feedback on your chat contributions with detailed analysis and improvement suggestions',
       color: 'from-green-500 to-emerald-500'
     },
     {
@@ -56,27 +59,33 @@ const LandingPage: React.FC = () => {
     'Prepare for interviews and assessments'
   ];
 
-  const testimonials = [
-    {
-      name: 'Sarah Johnson',
-      role: 'MBA Student',
-      content: 'This platform helped me ace my group discussion rounds. The AI feedback is incredibly accurate!',
-      rating: 5,
-      avatar: '👩‍🎓'
-    },
+  const successStories = [
     {
       name: 'Rahul Sharma',
-      role: 'Job Seeker',
-      content: 'Improved my confidence significantly. The practice sessions feel so real and engaging.',
+      company: 'TCS',
+      package: '₹7.5 LPA',
+      content: 'Cleared TCS group discussion round on first attempt after practicing here for just 2 weeks!',
       rating: 5,
-      avatar: '👨‍💼'
+      avatar: '👨‍💼',
+      improvement: '+40% confidence boost'
     },
     {
       name: 'Priya Patel',
-      role: 'Corporate Trainer',
-      content: 'Excellent tool for developing communication skills. My team loves using this platform.',
+      company: 'Infosys',
+      package: '₹6.8 LPA',
+      content: 'The AI feedback helped me identify my weak points. Got selected in campus placement!',
       rating: 5,
-      avatar: '👩‍💻'
+      avatar: '👩‍💻',
+      improvement: '+60% communication skills'
+    },
+    {
+      name: 'Arjun Kumar',
+      company: 'Wipro',
+      package: '₹8.2 LPA',
+      content: 'Amazing platform! The realistic practice sessions prepared me perfectly for actual interviews.',
+      rating: 5,
+      avatar: '👨‍🎓',
+      improvement: '+50% leadership skills'
     }
   ];
 
@@ -106,10 +115,6 @@ const LandingPage: React.FC = () => {
                 <MessageCircle className="h-6 w-6 text-white" />
               </div>
               <span className="text-xl font-bold text-gray-900">AI GD Helper Buddy</span>
-            </div>
-
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">Features</a>
             </div>
 
             <Link
@@ -143,8 +148,7 @@ const LandingPage: React.FC = () => {
                   </h1>
                   
                   <p className="text-xl text-gray-600 leading-relaxed">
-                    Practice group discussions with intelligent AI participants, get real-time feedback, 
-                    and boost your confidence for interviews, MBA admissions, and professional success.
+                    Master your interview skills through realistic group discussions - Perfect for campus placement preparation
                   </p>
                 </div>
 
@@ -159,15 +163,6 @@ const LandingPage: React.FC = () => {
                       <span>Practice GD Now</span>
                     </motion.button>
                   </Link>
-                  
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-full sm:w-auto bg-white text-gray-700 px-8 py-4 rounded-2xl font-semibold text-lg border-2 border-gray-200 hover:border-blue-300 hover:text-blue-600 transition-all duration-200 flex items-center justify-center space-x-3"
-                  >
-                    <BookOpen className="h-6 w-6" />
-                    <span>Learn More</span>
-                  </motion.button>
                 </div>
               </motion.div>
 
@@ -175,7 +170,7 @@ const LandingPage: React.FC = () => {
                 variants={itemVariants}
                 className="relative"
               >
-                {/* Dynamic Virtual Discussion Space Visualization */}
+                {/* Interactive Group Discussion Visualization */}
                 <div className="relative bg-white/70 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20">
                   <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
                     <Brain className="h-12 w-12 text-white" />
@@ -187,88 +182,84 @@ const LandingPage: React.FC = () => {
                         <Users className="h-6 w-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900">Virtual Discussion Space</h3>
-                        <p className="text-gray-600 text-sm">AI-Powered Group Discussion</p>
+                        <h3 className="font-semibold text-gray-900">Live Group Discussion</h3>
+                        <p className="text-gray-600 text-sm">Real-time Text Interactions</p>
                       </div>
                     </div>
 
-                    {/* Interconnected Participants Visualization */}
-                    <div className="relative h-32 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        {/* Central Hub */}
+                    {/* Dynamic Chat Simulation */}
+                    <div className="relative h-40 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4 overflow-hidden">
+                      <div className="space-y-3">
+                        {/* Animated Chat Messages */}
                         <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                          className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center"
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.5, duration: 0.8 }}
+                          className="flex items-start space-x-2"
                         >
-                          <Zap className="h-4 w-4 text-white" />
+                          <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs">
+                            A
+                          </div>
+                          <div className="bg-white rounded-lg px-3 py-2 shadow-sm max-w-xs">
+                            <p className="text-xs text-gray-800">AI has revolutionized healthcare...</p>
+                          </div>
                         </motion.div>
-                        
-                        {/* Participant Nodes */}
-                        {[0, 1, 2, 3].map((index) => {
-                          const angle = (index * 90) * (Math.PI / 180);
-                          const radius = 40;
-                          const x = Math.cos(angle) * radius;
-                          const y = Math.sin(angle) * radius;
-                          
-                          return (
-                            <motion.div
-                              key={index}
-                              animate={{ 
-                                scale: [1, 1.2, 1],
-                                opacity: [0.7, 1, 0.7]
-                              }}
-                              transition={{ 
-                                duration: 2, 
-                                repeat: Infinity, 
-                                delay: index * 0.5 
-                              }}
-                              className="absolute w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                              style={{
-                                transform: `translate(${x}px, ${y}px)`
-                              }}
-                            >
-                              {index === 0 ? 'You' : `AI${index}`}
-                            </motion.div>
-                          );
-                        })}
-                        
-                        {/* Connection Lines */}
-                        <svg className="absolute inset-0 w-full h-full">
-                          {[0, 1, 2, 3].map((index) => {
-                            const angle = (index * 90) * (Math.PI / 180);
-                            const radius = 40;
-                            const x = Math.cos(angle) * radius + 64;
-                            const y = Math.sin(angle) * radius + 64;
-                            
-                            return (
-                              <motion.line
-                                key={index}
-                                x1="64"
-                                y1="64"
-                                x2={x}
-                                y2={y}
-                                stroke="url(#gradient)"
-                                strokeWidth="2"
-                                initial={{ pathLength: 0 }}
-                                animate={{ pathLength: 1 }}
-                                transition={{ 
-                                  duration: 1.5, 
-                                  delay: index * 0.3,
-                                  repeat: Infinity,
-                                  repeatType: "reverse"
-                                }}
-                              />
-                            );
-                          })}
-                          <defs>
-                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                              <stop offset="0%" stopColor="#3B82F6" />
-                              <stop offset="100%" stopColor="#8B5CF6" />
-                            </linearGradient>
-                          </defs>
-                        </svg>
+
+                        <motion.div
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 1, duration: 0.8 }}
+                          className="flex items-start space-x-2 justify-end"
+                        >
+                          <div className="bg-blue-500 text-white rounded-lg px-3 py-2 shadow-sm max-w-xs">
+                            <p className="text-xs">I agree, but we must consider ethics...</p>
+                          </div>
+                          <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
+                            You
+                          </div>
+                        </motion.div>
+
+                        <motion.div
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 1.5, duration: 0.8 }}
+                          className="flex items-start space-x-2"
+                        >
+                          <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center text-white text-xs">
+                            M
+                          </div>
+                          <div className="bg-purple-100 rounded-lg px-3 py-2 shadow-sm max-w-xs">
+                            <p className="text-xs text-purple-800">Great points! Let's explore...</p>
+                          </div>
+                        </motion.div>
+
+                        <motion.div
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 2, duration: 0.8 }}
+                          className="flex items-start space-x-2 justify-end"
+                        >
+                          <div className="bg-green-100 rounded-lg px-3 py-2 shadow-sm max-w-xs">
+                            <p className="text-xs text-green-800">What about data privacy?</p>
+                          </div>
+                          <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs">
+                            S
+                          </div>
+                        </motion.div>
                       </div>
+
+                      {/* Typing Indicators */}
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: [0, 1, 0] }}
+                        transition={{ delay: 2.5, duration: 1.5, repeat: Infinity }}
+                        className="absolute bottom-2 left-4 flex items-center space-x-1"
+                      >
+                        <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" />
+                        <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                        <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                        <span className="text-xs text-gray-500 ml-2">AI typing...</span>
+                      </motion.div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200">
@@ -432,6 +423,93 @@ const LandingPage: React.FC = () => {
           </div>
         </section>
 
+        {/* Real Interview Success Stories Section */}
+        <section className="py-20 bg-gradient-to-br from-green-50 via-white to-blue-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div variants={itemVariants} className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">
+                Real Interview Success Stories
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Students who mastered group discussions and secured their dream placements
+              </p>
+            </motion.div>
+
+            {/* Success Metrics */}
+            <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-16">
+              <div className="text-center p-6 bg-white/70 backdrop-blur-lg rounded-2xl shadow-lg border border-white/20">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Trophy className="h-8 w-8 text-white" />
+                </div>
+                <p className="text-3xl font-bold text-green-600 mb-2">95%</p>
+                <p className="text-gray-600 font-medium">Success Rate</p>
+              </div>
+              
+              <div className="text-center p-6 bg-white/70 backdrop-blur-lg rounded-2xl shadow-lg border border-white/20">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Briefcase className="h-8 w-8 text-white" />
+                </div>
+                <p className="text-3xl font-bold text-blue-600 mb-2">2,500+</p>
+                <p className="text-gray-600 font-medium">Placements</p>
+              </div>
+              
+              <div className="text-center p-6 bg-white/70 backdrop-blur-lg rounded-2xl shadow-lg border border-white/20">
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <TrendingUp className="h-8 w-8 text-white" />
+                </div>
+                <p className="text-3xl font-bold text-purple-600 mb-2">₹8.5L</p>
+                <p className="text-gray-600 font-medium">Avg Package</p>
+              </div>
+              
+              <div className="text-center p-6 bg-white/70 backdrop-blur-lg rounded-2xl shadow-lg border border-white/20">
+                <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users className="h-8 w-8 text-white" />
+                </div>
+                <p className="text-3xl font-bold text-orange-600 mb-2">50+</p>
+                <p className="text-gray-600 font-medium">Top Companies</p>
+              </div>
+            </motion.div>
+
+            {/* Success Stories */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {successStories.map((story, index) => (
+                <motion.div
+                  key={index}
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-lg">
+                      {story.avatar}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">{story.name}</h4>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-blue-600 font-medium">{story.company}</span>
+                        <span className="text-sm text-green-600 font-bold">{story.package}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-700 mb-4 italic">"{story.content}"</p>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-1">
+                      {[...Array(story.rating)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
+                      ))}
+                    </div>
+                    <span className="text-sm text-green-600 font-medium bg-green-100 px-2 py-1 rounded-full">
+                      {story.improvement}
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* CTA Section */}
         <section className="py-20 bg-gradient-to-r from-gray-900 to-blue-900">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -440,7 +518,7 @@ const LandingPage: React.FC = () => {
                 Ready to Master Group Discussions?
               </h2>
               <p className="text-xl text-gray-300">
-                Start your journey today and join thousands of successful professionals
+                Elevate your group discussion performance with AI-powered practice sessions tailored for interview success
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -463,50 +541,15 @@ const LandingPage: React.FC = () => {
         {/* Footer */}
         <footer className="bg-gray-900 text-white py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <div className="h-8 w-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <MessageCircle className="h-5 w-5 text-white" />
-                  </div>
-                  <span className="text-lg font-bold">AI GD Helper Buddy</span>
-                </div>
-                <p className="text-gray-400 text-sm">
-                  Master group discussions with AI-powered practice sessions and real-time feedback.
-                </p>
+            <div className="flex items-center justify-center space-x-3 mb-8">
+              <div className="h-8 w-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <MessageCircle className="h-5 w-5 text-white" />
               </div>
-              
-              <div>
-                <h3 className="font-semibold mb-4">Product</h3>
-                <div className="space-y-2 text-sm text-gray-400">
-                  <p>Features</p>
-                  <p>FAQ</p>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="font-semibold mb-4">Company</h3>
-                <div className="space-y-2 text-sm text-gray-400">
-                  <p>About Us</p>
-                  <p>Contact</p>
-                  <p>Privacy Policy</p>
-                  <p>Terms of Service</p>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="font-semibold mb-4">Support</h3>
-                <div className="space-y-2 text-sm text-gray-400">
-                  <p>Help Center</p>
-                  <p>Community</p>
-                  <p>Tutorials</p>
-                  <p>Contact Support</p>
-                </div>
-              </div>
+              <span className="text-lg font-bold">AI GD Helper Buddy</span>
             </div>
             
-            <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
-              <p>&copy; 2024 AI GD Helper Buddy. All rights reserved.</p>
+            <div className="border-t border-gray-800 pt-8 text-center text-gray-400 text-sm">
+              <p>&copy; 2025 AI GD Helper Buddy. All rights reserved.</p>
             </div>
           </div>
         </footer>
