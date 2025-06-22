@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -13,91 +13,73 @@ import {
   Zap,
   Heart,
   Building,
-  Gavel
+  Gavel,
+  Leaf,
+  Brain,
+  RefreshCw
 } from 'lucide-react';
+import { 
+  getAllTopics, 
+  initializeDefaultTopics, 
+  incrementTopicPopularity,
+  GDTopic 
+} from '../../services/topicsService';
+import toast from 'react-hot-toast';
 
 const TopicSelector: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
+  const [topics, setTopics] = useState<GDTopic[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const categories = [
-    { name: 'All', icon: BookOpen, count: 48 },
-    { name: 'Technology', icon: Zap, count: 12 },
-    { name: 'Society', icon: Globe, count: 10 },
-    { name: 'Health', icon: Heart, count: 8 },
-    { name: 'Business', icon: Building, count: 9 },
-    { name: 'Politics', icon: Gavel, count: 9 }
+    { name: 'All', icon: BookOpen, count: 0 },
+    { name: 'Technology', icon: Zap, count: 0 },
+    { name: 'Society', icon: Globe, count: 0 },
+    { name: 'Health', icon: Heart, count: 0 },
+    { name: 'Business', icon: Building, count: 0 },
+    { name: 'Politics', icon: Gavel, count: 0 },
+    { name: 'Environment', icon: Leaf, count: 0 }
   ];
 
-  const topics = [
-    {
-      id: 1,
-      title: 'Artificial Intelligence in Healthcare',
-      description: 'Discuss the impact of AI on modern healthcare systems and patient care.',
-      category: 'Technology',
-      difficulty: 'Advanced',
-      duration: '8-10 mins',
-      participants: '4-6',
-      popularity: 92,
-      tags: ['AI', 'Healthcare', 'Ethics', 'Innovation']
-    },
-    {
-      id: 2,
-      title: 'Climate Change Solutions',
-      description: 'Explore sustainable approaches to combat climate change globally.',
-      category: 'Society',
-      difficulty: 'Intermediate',
-      duration: '6-8 mins',
-      participants: '3-5',
-      popularity: 88,
-      tags: ['Environment', 'Sustainability', 'Policy', 'Global']
-    },
-    {
-      id: 3,
-      title: 'Digital Privacy Rights',
-      description: 'Debate the balance between digital convenience and privacy protection.',
-      category: 'Technology',
-      difficulty: 'Advanced',
-      duration: '7-9 mins',
-      participants: '4-6',
-      popularity: 85,
-      tags: ['Privacy', 'Technology', 'Rights', 'Security']
-    },
-    {
-      id: 4,
-      title: 'Future of Remote Work',
-      description: 'Analyze the long-term implications of remote work on society and economy.',
-      category: 'Business',
-      difficulty: 'Intermediate',
-      duration: '6-8 mins',
-      participants: '3-5',
-      popularity: 90,
-      tags: ['Work', 'Technology', 'Society', 'Economy']
-    },
-    {
-      id: 5,
-      title: 'Mental Health Awareness',
-      description: 'Discuss strategies to improve mental health support in communities.',
-      category: 'Health',
-      difficulty: 'Beginner',
-      duration: '5-7 mins',
-      participants: '3-4',
-      popularity: 86,
-      tags: ['Health', 'Society', 'Support', 'Awareness']
-    },
-    {
-      id: 6,
-      title: 'Cryptocurrency and Economy',
-      description: 'Examine the role of digital currencies in the global financial system.',
-      category: 'Business',
-      difficulty: 'Advanced',
-      duration: '8-10 mins',
-      participants: '4-6',
-      popularity: 82,
-      tags: ['Finance', 'Technology', 'Economy', 'Innovation']
-    }
-  ];
+  // Load topics from Firebase
+  useEffect(() => {
+    const loadTopics = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Initialize default topics if needed
+        await initializeDefaultTopics();
+        
+        // Fetch all topics
+        const fetchedTopics = await getAllTopics();
+        setTopics(fetchedTopics);
+        
+        if (fetchedTopics.length === 0) {
+          setError('No topics available. Please check your Firebase connection.');
+        }
+      } catch (err) {
+        console.error('Error loading topics:', err);
+        setError('Failed to load topics. Please try again.');
+        toast.error('Failed to load topics from database');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTopics();
+  }, []);
+
+  // Update category counts
+  const categoriesWithCounts = categories.map(category => ({
+    ...category,
+    count: category.name === 'All' 
+      ? topics.length 
+      : topics.filter(topic => topic.category === category.name).length
+  }));
 
   const filteredTopics = topics.filter(topic => {
     const matchesSearch = topic.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -109,6 +91,16 @@ const TopicSelector: React.FC = () => {
     
     return matchesSearch && matchesCategory && matchesDifficulty;
   });
+
+  const handleTopicSelect = async (topicId: string) => {
+    try {
+      // Increment popularity when topic is selected
+      await incrementTopicPopularity(topicId);
+      toast.success('Topic selected! Starting session...');
+    } catch (error) {
+      console.error('Error updating topic popularity:', error);
+    }
+  };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -136,6 +128,50 @@ const TopicSelector: React.FC = () => {
     visible: { opacity: 1, y: 0 }
   };
 
+  const retryLoading = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const fetchedTopics = await getAllTopics();
+      setTopics(fetchedTopics);
+    } catch (err) {
+      setError('Failed to load topics. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Loading Topics...</h2>
+          <p className="text-gray-600">Fetching discussion topics from database</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center">
+          <Brain className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Topics</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={retryLoading}
+            className="flex items-center space-x-2 bg-blue-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-600 transition-all duration-200 mx-auto"
+          >
+            <RefreshCw className="h-5 w-5" />
+            <span>Retry Loading</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <motion.div
@@ -152,6 +188,9 @@ const TopicSelector: React.FC = () => {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Select from our curated collection of engaging topics designed to enhance your group discussion skills
           </p>
+          <div className="mt-4 text-sm text-gray-500">
+            {topics.length} topics available • Powered by Firebase
+          </div>
         </motion.div>
 
         {/* Search and Filters */}
@@ -176,7 +215,7 @@ const TopicSelector: React.FC = () => {
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 appearance-none"
               >
-                {categories.map(category => (
+                {categoriesWithCounts.map(category => (
                   <option key={category.name} value={category.name}>
                     {category.name} ({category.count})
                   </option>
@@ -202,7 +241,7 @@ const TopicSelector: React.FC = () => {
 
         {/* Category Pills */}
         <motion.div variants={itemVariants} className="flex flex-wrap gap-3 justify-center">
-          {categories.map(category => {
+          {categoriesWithCounts.map(category => {
             const Icon = category.icon;
             return (
               <button
@@ -279,7 +318,10 @@ const TopicSelector: React.FC = () => {
                 )}
               </div>
 
-              <Link to={`/simulation/${topic.id}`}>
+              <Link 
+                to={`/simulation/${topic.id}`}
+                onClick={() => handleTopicSelect(topic.id)}
+              >
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -293,7 +335,7 @@ const TopicSelector: React.FC = () => {
           ))}
         </motion.div>
 
-        {filteredTopics.length === 0 && (
+        {filteredTopics.length === 0 && !loading && (
           <motion.div
             variants={itemVariants}
             className="text-center py-12"

@@ -11,10 +11,13 @@ import {
   CheckCircle,
   TrendingUp,
   Brain,
-  Zap
+  Zap,
+  Target,
+  MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { addSession } from '../../services/userDataService';
+import { getTopicById, GDTopic } from '../../services/topicsService';
 import { 
   generateParticipants, 
   generateSessionAnalysis, 
@@ -40,6 +43,8 @@ const GDSimulation: React.FC = () => {
   const [sessionPhase, setSessionPhase] = useState<'waiting' | 'introduction' | 'discussion' | 'conclusion'>('waiting');
   const [userMessages, setUserMessages] = useState<string[]>([]);
   const [conversationHistory, setConversationHistory] = useState<string[]>([]);
+  const [topic, setTopic] = useState<GDTopic | null>(null);
+  const [loading, setLoading] = useState(true);
   const [liveFeedback, setLiveFeedback] = useState<LiveFeedback>({
     clarity: 0,
     relevance: 0,
@@ -55,19 +60,37 @@ const GDSimulation: React.FC = () => {
   }>>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const topic = {
-    id: parseInt(topicId || '1'),
-    title: 'Artificial Intelligence in Healthcare',
-    description: 'Discuss the impact of AI on modern healthcare systems and patient care.',
-    difficulty: 'Advanced',
-    duration: '8-10 mins',
-    keyPoints: [
-      'AI diagnostic accuracy vs human expertise',
-      'Privacy and security concerns',
-      'Cost implications and accessibility',
-      'Ethical considerations in AI decision-making'
-    ]
-  };
+  // Load topic from Firebase
+  useEffect(() => {
+    const loadTopic = async () => {
+      if (!topicId) {
+        toast.error('No topic ID provided');
+        navigate('/topics');
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const fetchedTopic = await getTopicById(topicId);
+        
+        if (!fetchedTopic) {
+          toast.error('Topic not found');
+          navigate('/topics');
+          return;
+        }
+
+        setTopic(fetchedTopic);
+      } catch (error) {
+        console.error('Error loading topic:', error);
+        toast.error('Failed to load topic');
+        navigate('/topics');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTopic();
+  }, [topicId, navigate]);
 
   // Generate AI participants on component mount
   useEffect(() => {
@@ -118,7 +141,7 @@ const GDSimulation: React.FC = () => {
   };
 
   const endSession = async () => {
-    if (!currentUser) return;
+    if (!currentUser || !topic) return;
     
     setIsAnalyzing(true);
     setSessionStarted(false);
@@ -193,6 +216,36 @@ const GDSimulation: React.FC = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Loading Topic...</h2>
+          <p className="text-gray-600">Preparing your discussion session</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!topic) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center">
+          <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Topic Not Found</h2>
+          <p className="text-gray-600 mb-4">The requested topic could not be loaded</p>
+          <button
+            onClick={() => navigate('/topics')}
+            className="bg-blue-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-600 transition-colors"
+          >
+            Back to Topics
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <motion.div
@@ -208,17 +261,34 @@ const GDSimulation: React.FC = () => {
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">{topic.title}</h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">{topic.description}</p>
+          <div className="flex items-center justify-center space-x-4 mt-4 text-sm text-gray-500">
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+              topic.difficulty === 'Advanced' 
+                ? 'bg-red-100 text-red-800'
+                : topic.difficulty === 'Intermediate'
+                ? 'bg-yellow-100 text-yellow-800'
+                : 'bg-green-100 text-green-800'
+            }`}>
+              {topic.difficulty}
+            </span>
+            <span>{topic.duration}</span>
+            <span>{topic.participants} participants</span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Main Discussion Area */}
-          <div className="lg:col-span-3 space-y-6">
+        {/* Enhanced Layout - Chat takes more space */}
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+          {/* Main Discussion Area - Expanded to 75% width */}
+          <div className="xl:col-span-3 space-y-6">
             {/* Control Panel */}
             <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900">AI-Powered Discussion</h3>
+                <h3 className="text-xl font-bold text-gray-900 flex items-center">
+                  <Brain className="h-6 w-6 mr-2 text-purple-600" />
+                  AI-Powered Discussion
+                </h3>
                 <div className="flex items-center space-x-2 text-gray-600">
-                  <Brain className="h-5 w-5" />
+                  <Users className="h-5 w-5" />
                   <span>{aiParticipants.length + 1} participants</span>
                 </div>
               </div>
@@ -266,54 +336,56 @@ const GDSimulation: React.FC = () => {
               )}
             </div>
 
-            {/* Enhanced Chat Interface */}
-            <ChatInterface 
-              isActive={sessionStarted}
-              onMessageSent={handleChatMessage}
-              onFeedbackUpdate={handleFeedbackUpdate}
-              aiParticipants={aiParticipants}
-              topic={topic.title}
-            />
+            {/* Enhanced Chat Interface - Larger dimensions */}
+            <div style={{ height: '75vh' }}>
+              <ChatInterface 
+                isActive={sessionStarted}
+                onMessageSent={handleChatMessage}
+                onFeedbackUpdate={handleFeedbackUpdate}
+                aiParticipants={aiParticipants}
+                topic={topic.title}
+              />
+            </div>
           </div>
 
-          {/* Sidebar */}
+          {/* Sidebar - Compressed to 25% width */}
           <div className="space-y-6">
             {/* AI Participants */}
-            <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20">
+            <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-4 shadow-lg border border-white/20">
               <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
                 <Zap className="h-5 w-5 mr-2 text-blue-600" />
                 AI Participants
               </h3>
               
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3 p-3 rounded-lg bg-blue-50 border-2 border-blue-200">
-                  <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium">
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 border border-blue-200">
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
                     You
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">You</p>
-                    <p className="text-sm text-gray-600">Human Participant</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 text-sm truncate">You</p>
+                    <p className="text-xs text-gray-600">Human</p>
                   </div>
                 </div>
 
                 {aiParticipants.map((participant, index) => (
                   <div 
                     key={index}
-                    className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 ${
+                    className={`flex items-center space-x-2 p-2 rounded-lg transition-all duration-200 ${
                       participant.type === 'mentor' 
                         ? 'bg-purple-50 border border-purple-200' 
                         : 'bg-green-50 border border-green-200'
                     }`}
                   >
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
                       participant.type === 'mentor' ? 'bg-purple-500' : 'bg-green-500'
                     }`}>
                       {participant.avatar}
                     </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">{participant.name}</p>
-                      <p className="text-sm text-gray-600">
-                        {participant.type === 'mentor' ? 'AI Mentor' : 'AI Student'}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 text-sm truncate">{participant.name}</p>
+                      <p className="text-xs text-gray-600">
+                        {participant.type === 'mentor' ? 'Mentor' : 'Student'}
                       </p>
                     </div>
                   </div>
@@ -322,72 +394,91 @@ const GDSimulation: React.FC = () => {
             </div>
 
             {/* Key Discussion Points */}
-            <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Key Points to Cover</h3>
+            <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-4 shadow-lg border border-white/20">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <Target className="h-5 w-5 mr-2 text-purple-600" />
+                Key Points
+              </h3>
               
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {topic.keyPoints.map((point, index) => (
-                  <div key={index} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center mt-0.5">
-                      <span className="text-purple-600 text-sm font-medium">{index + 1}</span>
+                  <div key={index} className="flex items-start space-x-2 p-2 bg-gray-50 rounded-lg">
+                    <div className="w-5 h-5 bg-purple-100 rounded-full flex items-center justify-center mt-0.5">
+                      <span className="text-purple-600 text-xs font-medium">{index + 1}</span>
                     </div>
-                    <p className="text-gray-800 text-sm">{point}</p>
+                    <p className="text-gray-800 text-xs leading-relaxed">{point}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Live AI Feedback */}
+            {/* AI Insights Section - Repositioned and Enhanced */}
             {sessionStarted && (
-              <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20">
+              <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-4 shadow-lg border border-white/20">
                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
                   <Brain className="h-5 w-5 mr-2 text-purple-600" />
-                  Live AI Feedback
+                  Live AI Insights
                 </h3>
                 
-                <div className="space-y-4">
+                <div className="space-y-3">
+                  {/* Metrics as bullet points */}
                   <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Clarity</span>
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span>Clarity</span>
+                      </div>
                       <span className="font-medium">{liveFeedback.clarity}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 rounded-full h-1.5">
                       <div 
-                        className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+                        className="bg-blue-500 h-1.5 rounded-full transition-all duration-500"
                         style={{ width: `${liveFeedback.clarity}%` }}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Relevance</span>
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span>Relevance</span>
+                      </div>
                       <span className="font-medium">{liveFeedback.relevance}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 rounded-full h-1.5">
                       <div 
-                        className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                        className="bg-green-500 h-1.5 rounded-full transition-all duration-500"
                         style={{ width: `${liveFeedback.relevance}%` }}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Confidence</span>
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                        <span>Confidence</span>
+                      </div>
                       <span className="font-medium">{liveFeedback.confidence}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 rounded-full h-1.5">
                       <div 
-                        className="bg-purple-500 h-2 rounded-full transition-all duration-500"
+                        className="bg-purple-500 h-1.5 rounded-full transition-all duration-500"
                         style={{ width: `${liveFeedback.confidence}%` }}
                       />
                     </div>
                   </div>
 
+                  {/* AI Feedback as bullet points */}
                   <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                    <p className="text-sm text-blue-800 font-medium">AI Insight:</p>
-                    <p className="text-sm text-blue-700 mt-1">{liveFeedback.feedback}</p>
+                    <div className="flex items-start space-x-2">
+                      <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
+                      <div>
+                        <p className="text-xs font-medium text-blue-900 mb-1">AI Insight:</p>
+                        <p className="text-xs text-blue-700 leading-relaxed">{liveFeedback.feedback}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
