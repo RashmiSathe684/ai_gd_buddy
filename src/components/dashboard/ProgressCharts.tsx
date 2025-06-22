@@ -57,50 +57,35 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({ userData }) => {
           </div>
         </div>
 
-        {/* Skill Breakdown */}
+        {/* Enhanced Skill Breakdown with proper visualization */}
         <div>
           <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
             <div className="w-3 h-3 bg-purple-500 rounded-full mr-2" />
             Skill Breakdown
           </h4>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={userData.skillBreakdown} layout="horizontal">
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis 
-                  type="number" 
-                  stroke="#666"
-                  fontSize={12}
-                  domain={[0, 100]}
-                />
-                <YAxis 
-                  type="category" 
-                  dataKey="skill" 
-                  stroke="#666"
-                  fontSize={12}
-                  width={80}
-                />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    border: 'none',
-                    borderRadius: '12px',
-                    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)'
-                  }}
-                />
-                <Bar 
-                  dataKey="score" 
-                  fill="url(#skillGradient)"
-                  radius={[0, 6, 6, 0]}
-                />
-                <defs>
-                  <linearGradient id="skillGradient" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#8B5CF6" />
-                    <stop offset="100%" stopColor="#A855F7" />
-                  </linearGradient>
-                </defs>
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="space-y-4">
+            {userData.skillBreakdown.map((skill, index) => {
+              const colors = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
+              const color = colors[index % colors.length];
+              
+              return (
+                <div key={skill.skill} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium text-gray-900 text-sm">{skill.skill}</span>
+                    <span className="font-bold text-gray-700">{skill.score}%</span>
+                  </div>
+                  <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ease-out"
+                      style={{ 
+                        width: `${skill.score}%`,
+                        backgroundColor: color
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

@@ -203,7 +203,7 @@ export const generateSessionAnalysis = async (
       {
         "time": "4:30",
         "type": "improvement", 
-        "description": "Missed opportunity to build on Sarah's argument"
+        "description": "Missed opportunity to build on Riley's argument"
       }
     ],
     "detailedFeedback": "Overall strong performance with clear communication and relevant contributions. Focus on more interactive engagement with other participants."
@@ -289,7 +289,7 @@ export const generateDiscussionStarter = async (topic: string): Promise<string> 
   }
 };
 
-// Generate random student participants
+// Generate random student participants with updated names
 export const generateParticipants = async (): Promise<Array<{
   name: string;
   type: 'student' | 'mentor';
@@ -297,33 +297,30 @@ export const generateParticipants = async (): Promise<Array<{
   personality: string;
 }>> => {
   const studentNames = [
-    'Alex', 'Sam', 'Jordan', 'Casey', 'Riley', 'Morgan', 'Taylor', 'Avery',
+    'Alex', 'Riley', 'Jordan', 'Casey', 'Morgan', 'Taylor', 'Avery',
     'Quinn', 'Blake', 'Sage', 'River', 'Skylar', 'Rowan', 'Phoenix'
   ];
   
   const mentorNames = [
-    'Dr. Smith', 'Prof. Johnson', 'Ms. Williams', 'Mr. Brown', 'Dr. Davis'
+    'Dr. Smith', 'Prof. Smith', 'Ms. Williams', 'Mr. Brown', 'Dr. Davis'
   ];
 
   const avatars = ['👨‍🎓', '👩‍🎓', '🧑‍🎓', '👨‍💼', '👩‍💼'];
   const mentorAvatars = ['👨‍🏫', '👩‍🏫', '🧑‍🏫'];
 
-  // Select 2 random students
-  const selectedStudents = studentNames
-    .sort(() => 0.5 - Math.random())
-    .slice(0, 2)
-    .map((name, index) => ({
-      name,
-      type: 'student' as const,
-      avatar: avatars[index % avatars.length],
-      personality: 'curious and engaged'
-    }));
+  // Select 2 random students (ensuring Riley is included)
+  const selectedStudents = ['Riley', 'Alex'].map((name, index) => ({
+    name,
+    type: 'student' as const,
+    avatar: avatars[index % avatars.length],
+    personality: 'curious and engaged'
+  }));
 
-  // Select 1 mentor
+  // Select Prof. Smith as mentor
   const selectedMentor = {
-    name: mentorNames[Math.floor(Math.random() * mentorNames.length)],
+    name: 'Prof. Smith',
     type: 'mentor' as const,
-    avatar: mentorAvatars[Math.floor(Math.random() * mentorAvatars.length)],
+    avatar: mentorAvatars[0],
     personality: 'supportive and guiding'
   };
 

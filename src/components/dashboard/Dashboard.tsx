@@ -91,14 +91,6 @@ const Dashboard: React.FC = () => {
       bgColor: 'bg-green-50'
     },
     {
-      label: 'Topics Mastered',
-      value: userData.sessionStats.topicsMastered.toString(),
-      change: '+2 this month',
-      icon: Award,
-      color: 'from-purple-500 to-purple-600',
-      bgColor: 'bg-purple-50'
-    },
-    {
       label: 'Speaking Time',
       value: `${Math.round(userData.sessionStats.totalSpeakingTime / Math.max(1, userData.sessionStats.completedSessions))} mins`,
       change: 'Average per session',
@@ -152,10 +144,10 @@ const Dashboard: React.FC = () => {
           </Link>
         </motion.div>
 
-        {/* Stats Grid */}
+        {/* Stats Grid - Removed Topics Mastered */}
         <motion.div 
           variants={itemVariants}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
         >
           {stats.map((stat, index) => {
             const Icon = stat.icon;
@@ -272,12 +264,6 @@ const Dashboard: React.FC = () => {
               >
                 <span>Explore Topics</span>
                 <BookOpen className="h-5 w-5" />
-              </Link>
-              <Link
-                to="/dashboard"
-                className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-all duration-200 border border-white/20"
-              >
-                View Progress
               </Link>
             </div>
           </div>

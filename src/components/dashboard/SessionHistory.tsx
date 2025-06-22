@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, Award, Eye } from 'lucide-react';
+import { Calendar, Clock, Award } from 'lucide-react';
 import { UserData } from '../../services/userDataService';
 
 interface SessionHistoryProps {
@@ -89,10 +89,6 @@ const SessionHistory: React.FC<SessionHistoryProps> = ({ userData }) => {
                     </p>
                     <p className="text-xs text-gray-500">Score</p>
                   </div>
-
-                  <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">
-                    <Eye className="h-5 w-5" />
-                  </button>
                 </div>
               </div>
             </motion.div>

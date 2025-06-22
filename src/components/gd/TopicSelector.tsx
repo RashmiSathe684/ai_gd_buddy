@@ -5,9 +5,7 @@ import {
   Search, 
   Filter, 
   Play, 
-  Clock, 
   Users, 
-  TrendingUp,
   BookOpen,
   Globe,
   Zap,
@@ -277,10 +275,6 @@ const TopicSelector: React.FC = () => {
                 <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getDifficultyColor(topic.difficulty)}`}>
                   {topic.difficulty}
                 </span>
-                <div className="flex items-center space-x-1 text-gray-500">
-                  <TrendingUp className="h-4 w-4" />
-                  <span className="text-sm font-medium">{topic.popularity}%</span>
-                </div>
               </div>
 
               <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
@@ -293,12 +287,8 @@ const TopicSelector: React.FC = () => {
 
               <div className="flex items-center space-x-4 mb-4 text-sm text-gray-500">
                 <div className="flex items-center space-x-1">
-                  <Clock className="h-4 w-4" />
-                  <span>{topic.duration}</span>
-                </div>
-                <div className="flex items-center space-x-1">
                   <Users className="h-4 w-4" />
-                  <span>{topic.participants}</span>
+                  <span>3-4 participants</span>
                 </div>
               </div>
 

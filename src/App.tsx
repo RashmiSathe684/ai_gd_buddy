@@ -10,6 +10,7 @@ import Dashboard from './components/dashboard/Dashboard';
 import TopicSelector from './components/gd/TopicSelector';
 import GDSimulation from './components/gd/GDSimulation';
 import FeedbackSummary from './components/gd/FeedbackSummary';
+import ProfilePage from './components/profile/ProfilePage';
 import Navbar from './components/shared/Navbar';
 import ErrorBoundary from './components/shared/ErrorBoundary';
 
@@ -27,6 +28,7 @@ function App() {
               <Route path="/topics" element={<PrivateRoute><><Navbar /><TopicSelector /></></PrivateRoute>} />
               <Route path="/simulation/:topicId" element={<PrivateRoute><><Navbar /><GDSimulation /></></PrivateRoute>} />
               <Route path="/feedback/:sessionId" element={<PrivateRoute><><Navbar /><FeedbackSummary /></></PrivateRoute>} />
+              <Route path="/profile" element={<PrivateRoute><><Navbar /><ProfilePage /></></PrivateRoute>} />
             </Routes>
             <Toaster 
               position="top-right"
