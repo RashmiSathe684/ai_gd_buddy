@@ -188,12 +188,14 @@ export const addSession = async (
     if (userDoc.exists()) {
       const userData = userDoc.data() as UserData;
       
-      // Create new session objects with proper date handling
+      // Create new session objects with client-side Date (not serverTimestamp for arrays)
+      const currentDate = new Date();
+      
       const newRecentSession: RecentSession = {
         id: sessionRef.id,
         topicId: sessionData.topicId,
         topicTitle: sessionData.topicTitle,
-        date: serverTimestamp(),
+        date: currentDate,
         performance: sessionData.overallScore,
         duration: sessionData.duration,
         difficulty: sessionData.difficulty,
@@ -204,7 +206,7 @@ export const addSession = async (
         id: sessionRef.id,
         topicId: sessionData.topicId,
         topicTitle: sessionData.topicTitle,
-        date: serverTimestamp(),
+        date: currentDate,
         metrics: sessionData.metrics,
         overallScore: sessionData.overallScore,
         duration: sessionData.duration,
