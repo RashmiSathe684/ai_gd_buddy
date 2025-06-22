@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Mic, 
-  MicOff, 
   Play, 
   Square, 
   Clock, 
@@ -15,27 +13,26 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { addSession } from '../../services/userDataService';
-import VoiceInput from './VoiceInput';
+import ChatInterface from './ChatInterface';
 import toast from 'react-hot-toast';
 
 const GDSimulation: React.FC = () => {
   const { topicId } = useParams<{ topicId: string }>();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const [isRecording, setIsRecording] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [currentSpeaker, setCurrentSpeaker] = useState(0);
   const [sessionPhase, setSessionPhase] = useState<'waiting' | 'introduction' | 'discussion' | 'conclusion'>('waiting');
   const [userContributions, setUserContributions] = useState<string[]>([]);
   const [sessionData, setSessionData] = useState({
-    participation: 85,
-    clarity: 90,
-    relevance: 88,
-    leadership: 75,
-    criticalThinking: 92,
-    activeListening: 87,
-    confidence: 83
+    participation: 75,
+    clarity: 80,
+    relevance: 85,
+    leadership: 70,
+    criticalThinking: 88,
+    activeListening: 82,
+    confidence: 78
   });
 
   const aiParticipants = [
@@ -121,7 +118,7 @@ const GDSimulation: React.FC = () => {
         duration: Math.round(timeElapsed / 60),
         difficulty: topic.difficulty,
         participants: aiParticipants.length + 1,
-        timestamp: new Date() // ✅ Fixed timestamp issue
+        timestamp: new Date()
       });
 
       toast.success('Session completed and saved!');
@@ -134,14 +131,15 @@ const GDSimulation: React.FC = () => {
     }
   };
 
-  const handleVoiceInput = (transcript: string) => {
-    if (transcript.trim()) {
-      setUserContributions(prev => [...prev, transcript]);
+  const handleChatMessage = (message: string) => {
+    if (message.trim()) {
+      setUserContributions(prev => [...prev, message]);
       setSessionData(prev => ({
         ...prev,
-        participation: Math.min(100, prev.participation + 2),
-        clarity: Math.min(100, prev.clarity + 1),
-        confidence: Math.min(100, prev.confidence + 1)
+        participation: Math.min(100, prev.participation + 3),
+        clarity: Math.min(100, prev.clarity + 2),
+        confidence: Math.min(100, prev.confidence + 2),
+        relevance: Math.min(100, prev.relevance + 1)
       }));
     }
   };
@@ -163,6 +161,7 @@ const GDSimulation: React.FC = () => {
       default: return 'from-gray-500 to-gray-600';
     }
   };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <motion.div
@@ -205,31 +204,15 @@ const GDSimulation: React.FC = () => {
                     <span>Start Discussion</span>
                   </motion.button>
                 ) : (
-                  <>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setIsRecording(!isRecording)}
-                      className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-                        isRecording
-                          ? 'bg-red-500 text-white hover:bg-red-600'
-                          : 'bg-green-500 text-white hover:bg-green-600'
-                      }`}
-                    >
-                      {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                      <span>{isRecording ? 'Stop Speaking' : 'Start Speaking'}</span>
-                    </motion.button>
-
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={endSession}
-                      className="flex items-center space-x-2 bg-gray-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-700 transition-all duration-200"
-                    >
-                      <Square className="h-5 w-5" />
-                      <span>End Session</span>
-                    </motion.button>
-                  </>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={endSession}
+                    className="flex items-center space-x-2 bg-gray-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-700 transition-all duration-200"
+                  >
+                    <Square className="h-5 w-5" />
+                    <span>End Session</span>
+                  </motion.button>
                 )}
               </div>
 
@@ -241,7 +224,7 @@ const GDSimulation: React.FC = () => {
                   </div>
                   <div className="p-3 bg-green-50 rounded-xl">
                     <p className="text-2xl font-bold text-green-600">{userContributions.length}</p>
-                    <p className="text-sm text-gray-600">Your Points</p>
+                    <p className="text-sm text-gray-600">Your Messages</p>
                   </div>
                   <div className="p-3 bg-purple-50 rounded-xl">
                     <p className="text-2xl font-bold text-purple-600">{sessionData.participation}%</p>
@@ -251,63 +234,12 @@ const GDSimulation: React.FC = () => {
               )}
             </div>
 
-            {/* Voice Input Component */}
-            {sessionStarted && (
-              <VoiceInput 
-                isRecording={isRecording}
-                onTranscript={handleVoiceInput}
-              />
-            )}
-
-            {/* Live Transcript */}
-            {sessionStarted && (
-              <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-gray-900">Live Discussion</h3>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-                    <span className="text-sm text-gray-600">Live</span>
-                  </div>
-                </div>
-
-                <div className="space-y-4 max-h-96 overflow-y-auto">
-                  <AnimatePresence>
-                    {userContributions.map((contribution, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg"
-                      >
-                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium text-sm">
-                          You
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-gray-800">{contribution}</p>
-                          <p className="text-xs text-gray-500 mt-1">Just now</p>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-
-                  {/* AI Participant Messages (Simulated) */}
-                  {sessionPhase === 'discussion' && (
-                    <div className="space-y-4">
-                      <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                          👨‍💻
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-900">Alex Chen</p>
-                          <p className="text-gray-800">AI has shown remarkable accuracy in diagnostic imaging, particularly in radiology. Studies show AI can detect certain conditions faster than human radiologists.</p>
-                          <p className="text-xs text-gray-500 mt-1">2 minutes ago</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+            {/* Chat Interface */}
+            <ChatInterface 
+              isActive={sessionStarted}
+              onMessageSent={handleChatMessage}
+              aiParticipants={aiParticipants}
+            />
           </div>
 
           {/* Sidebar */}
@@ -376,14 +308,14 @@ const GDSimulation: React.FC = () => {
                     <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5" />
                     <div>
                       <p className="text-sm font-medium text-gray-800">Clarity: {sessionData.clarity}%</p>
-                      <p className="text-xs text-gray-600">Excellent articulation</p>
+                      <p className="text-xs text-gray-600">Good communication</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
                     <TrendingUp className="h-5 w-5 text-green-600 mt-0.5" />
                     <div>
                       <p className="text-sm font-medium text-gray-800">Participation: {sessionData.participation}%</p>
-                      <p className="text-xs text-gray-600">Great engagement level</p>
+                      <p className="text-xs text-gray-600">Active engagement</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-3 p-3 bg-purple-50 rounded-lg">

@@ -10,7 +10,8 @@ import {
   limit,
   addDoc,
   serverTimestamp,
-  where
+  where,
+  getDocs
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { User } from 'firebase/auth';
@@ -158,15 +159,27 @@ export const addSession = async (
     duration: number;
     difficulty: string;
     participants: number;
+    timestamp: Date;
   }
 ): Promise<void> => {
   try {
-    // Add to sessions collection
+    console.log('Adding session for user:', userId);
+    console.log('Session data:', sessionData);
+
+    // Add to sessions collection with proper timestamp
     const sessionRef = await addDoc(collection(db, 'sessions'), {
       userId,
-      ...sessionData,
-      date: serverTimestamp()
+      topicId: sessionData.topicId,
+      topicTitle: sessionData.topicTitle,
+      metrics: sessionData.metrics,
+      overallScore: sessionData.overallScore,
+      duration: sessionData.duration,
+      difficulty: sessionData.difficulty,
+      participants: sessionData.participants,
+      date: serverTimestamp() // Use server timestamp for consistency
     });
+
+    console.log('Session added with ID:', sessionRef.id);
 
     // Update user data
     const userDocRef = doc(db, 'users', userId);
@@ -175,7 +188,7 @@ export const addSession = async (
     if (userDoc.exists()) {
       const userData = userDoc.data() as UserData;
       
-      // Create new session objects
+      // Create new session objects with proper date handling
       const newRecentSession: RecentSession = {
         id: sessionRef.id,
         topicId: sessionData.topicId,
@@ -218,11 +231,30 @@ export const addSession = async (
 
       // Update skill breakdown
       const updatedSkillBreakdown = userData.skillBreakdown.map(skill => {
-        const metricKey = skill.skill.toLowerCase().replace(' ', '') as keyof SessionMetrics;
-        const newScore = sessionData.metrics[metricKey] || skill.score;
+        let metricValue = 0;
+        switch (skill.skill.toLowerCase()) {
+          case 'communication':
+            metricValue = sessionData.metrics.clarity;
+            break;
+          case 'critical thinking':
+            metricValue = sessionData.metrics.criticalThinking;
+            break;
+          case 'leadership':
+            metricValue = sessionData.metrics.leadership;
+            break;
+          case 'active listening':
+            metricValue = sessionData.metrics.activeListening;
+            break;
+          case 'confidence':
+            metricValue = sessionData.metrics.confidence;
+            break;
+          default:
+            metricValue = skill.score;
+        }
+        
         return {
           ...skill,
-          score: Math.round((skill.score + newScore) / 2)
+          score: skill.score === 0 ? metricValue : Math.round((skill.score + metricValue) / 2)
         };
       });
 
@@ -254,6 +286,11 @@ export const addSession = async (
         skillBreakdown: updatedSkillBreakdown,
         progressData: updatedProgressData
       });
+
+      console.log('User data updated successfully');
+    } else {
+      console.error('User document not found');
+      throw new Error('User document not found');
     }
   } catch (error) {
     console.error('Error adding session:', error);
