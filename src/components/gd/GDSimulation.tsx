@@ -9,12 +9,27 @@ import {
   Volume2,
   AlertCircle,
   CheckCircle,
-  TrendingUp
+  TrendingUp,
+  Brain,
+  Zap
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { addSession } from '../../services/userDataService';
+import { 
+  generateParticipants, 
+  generateSessionAnalysis, 
+  isGeminiInitialized 
+} from '../../services/geminiService';
 import ChatInterface from './ChatInterface';
 import toast from 'react-hot-toast';
+
+interface LiveFeedback {
+  clarity: number;
+  relevance: number;
+  confidence: number;
+  participation: number;
+  feedback: string;
+}
 
 const GDSimulation: React.FC = () => {
   const { topicId } = useParams<{ topicId: string }>();
@@ -22,24 +37,23 @@ const GDSimulation: React.FC = () => {
   const { currentUser } = useAuth();
   const [sessionStarted, setSessionStarted] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
-  const [currentSpeaker, setCurrentSpeaker] = useState(0);
   const [sessionPhase, setSessionPhase] = useState<'waiting' | 'introduction' | 'discussion' | 'conclusion'>('waiting');
-  const [userContributions, setUserContributions] = useState<string[]>([]);
-  const [sessionData, setSessionData] = useState({
-    participation: 75,
-    clarity: 80,
-    relevance: 85,
-    leadership: 70,
-    criticalThinking: 88,
-    activeListening: 82,
-    confidence: 78
+  const [userMessages, setUserMessages] = useState<string[]>([]);
+  const [conversationHistory, setConversationHistory] = useState<string[]>([]);
+  const [liveFeedback, setLiveFeedback] = useState<LiveFeedback>({
+    clarity: 0,
+    relevance: 0,
+    confidence: 0,
+    participation: 0,
+    feedback: 'Start contributing to see live feedback!'
   });
-
-  const aiParticipants = [
-    { name: 'Alex Chen', role: 'Technology Advocate', avatar: '👨‍💻' },
-    { name: 'Sarah Johnson', role: 'Policy Expert', avatar: '👩‍💼' },
-    { name: 'Dr. Mike Rodriguez', role: 'Research Specialist', avatar: '👨‍🔬' },
-  ];
+  const [aiParticipants, setAiParticipants] = useState<Array<{
+    name: string;
+    type: 'student' | 'mentor';
+    avatar: string;
+    personality: string;
+  }>>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const topic = {
     id: parseInt(topicId || '1'),
@@ -55,6 +69,26 @@ const GDSimulation: React.FC = () => {
     ]
   };
 
+  // Generate AI participants on component mount
+  useEffect(() => {
+    const initializeParticipants = async () => {
+      try {
+        const participants = await generateParticipants();
+        setAiParticipants(participants);
+      } catch (error) {
+        console.error('Error generating participants:', error);
+        // Fallback participants
+        setAiParticipants([
+          { name: 'Alex', type: 'student', avatar: '👨‍🎓', personality: 'curious' },
+          { name: 'Sam', type: 'student', avatar: '👩‍🎓', personality: 'analytical' },
+          { name: 'Dr. Smith', type: 'mentor', avatar: '👨‍🏫', personality: 'guiding' }
+        ]);
+      }
+    };
+
+    initializeParticipants();
+  }, []);
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (sessionStarted) {
@@ -65,15 +99,6 @@ const GDSimulation: React.FC = () => {
     return () => clearInterval(interval);
   }, [sessionStarted]);
 
-  useEffect(() => {
-    if (sessionStarted && sessionPhase === 'discussion') {
-      const speakingInterval = setInterval(() => {
-        setCurrentSpeaker(prev => (prev + 1) % (aiParticipants.length + 1));
-      }, 8000);
-      return () => clearInterval(speakingInterval);
-    }
-  }, [sessionStarted, sessionPhase, aiParticipants.length]);
-
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -81,74 +106,80 @@ const GDSimulation: React.FC = () => {
   };
 
   const startSession = () => {
+    if (!isGeminiInitialized()) {
+      toast.error('Please configure Gemini API first');
+      return;
+    }
+    
     setSessionStarted(true);
     setSessionPhase('introduction');
     setTimeout(() => setSessionPhase('discussion'), 30000);
+    toast.success('Session started! AI participants are ready.');
   };
 
   const endSession = async () => {
     if (!currentUser) return;
+    
+    setIsAnalyzing(true);
     setSessionStarted(false);
     setSessionPhase('conclusion');
 
     try {
-      const overallScore = Math.round(
-        (sessionData.participation + 
-         sessionData.clarity + 
-         sessionData.relevance + 
-         sessionData.leadership + 
-         sessionData.criticalThinking + 
-         sessionData.activeListening + 
-         sessionData.confidence) / 7
+      if (!isGeminiInitialized()) {
+        throw new Error('Gemini API not initialized');
+      }
+
+      // Generate comprehensive analysis using Gemini
+      const analysis = await generateSessionAnalysis(
+        topic.title,
+        userMessages,
+        Math.round(timeElapsed / 60),
+        conversationHistory
       );
 
+      // Save session with AI-generated analysis
       await addSession(currentUser.uid, {
         topicId: topicId || '1',
         topicTitle: topic.title,
-        metrics: {
-          participation: sessionData.participation,
-          clarity: sessionData.clarity,
-          relevance: sessionData.relevance,
-          leadership: sessionData.leadership,
-          criticalThinking: sessionData.criticalThinking,
-          activeListening: sessionData.activeListening,
-          confidence: sessionData.confidence
-        },
-        overallScore,
+        metrics: analysis.metrics,
+        overallScore: analysis.overallScore,
         duration: Math.round(timeElapsed / 60),
         difficulty: topic.difficulty,
         participants: aiParticipants.length + 1,
         timestamp: new Date()
       });
 
-      toast.success('Session completed and saved!');
+      toast.success('Session analyzed and saved!');
+      
+      // Store analysis for feedback page
+      sessionStorage.setItem('sessionAnalysis', JSON.stringify(analysis));
+      
       setTimeout(() => {
         navigate(`/feedback/${topicId}`);
       }, 2000);
     } catch (error) {
-      console.error('Error saving session:', error);
-      toast.error('Failed to save session data');
+      console.error('Error analyzing session:', error);
+      toast.error('Failed to analyze session');
+      setIsAnalyzing(false);
     }
   };
 
   const handleChatMessage = (message: string) => {
     if (message.trim()) {
-      setUserContributions(prev => [...prev, message]);
-      setSessionData(prev => ({
-        ...prev,
-        participation: Math.min(100, prev.participation + 3),
-        clarity: Math.min(100, prev.clarity + 2),
-        confidence: Math.min(100, prev.confidence + 2),
-        relevance: Math.min(100, prev.relevance + 1)
-      }));
+      setUserMessages(prev => [...prev, message]);
+      setConversationHistory(prev => [...prev, `You: ${message}`]);
     }
+  };
+
+  const handleFeedbackUpdate = (feedback: LiveFeedback) => {
+    setLiveFeedback(feedback);
   };
 
   const getPhaseTitle = () => {
     switch (sessionPhase) {
       case 'introduction': return 'Introduction Phase';
       case 'discussion': return 'Active Discussion';
-      case 'conclusion': return 'Conclusion Phase';
+      case 'conclusion': return 'Analyzing Session';
       default: return 'Ready to Start';
     }
   };
@@ -179,15 +210,15 @@ const GDSimulation: React.FC = () => {
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">{topic.description}</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Discussion Area */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-3 space-y-6">
             {/* Control Panel */}
             <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900">Discussion Controls</h3>
+                <h3 className="text-xl font-bold text-gray-900">AI-Powered Discussion</h3>
                 <div className="flex items-center space-x-2 text-gray-600">
-                  <Users className="h-5 w-5" />
+                  <Brain className="h-5 w-5" />
                   <span>{aiParticipants.length + 1} participants</span>
                 </div>
               </div>
@@ -201,17 +232,18 @@ const GDSimulation: React.FC = () => {
                     className="flex items-center space-x-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-lg"
                   >
                     <Play className="h-6 w-6" />
-                    <span>Start Discussion</span>
+                    <span>Start AI Discussion</span>
                   </motion.button>
                 ) : (
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={endSession}
-                    className="flex items-center space-x-2 bg-gray-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-700 transition-all duration-200"
+                    disabled={isAnalyzing}
+                    className="flex items-center space-x-2 bg-gray-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-700 transition-all duration-200 disabled:opacity-50"
                   >
                     <Square className="h-5 w-5" />
-                    <span>End Session</span>
+                    <span>{isAnalyzing ? 'Analyzing...' : 'End Session'}</span>
                   </motion.button>
                 )}
               </div>
@@ -223,60 +255,67 @@ const GDSimulation: React.FC = () => {
                     <p className="text-sm text-gray-600">Duration</p>
                   </div>
                   <div className="p-3 bg-green-50 rounded-xl">
-                    <p className="text-2xl font-bold text-green-600">{userContributions.length}</p>
+                    <p className="text-2xl font-bold text-green-600">{userMessages.length}</p>
                     <p className="text-sm text-gray-600">Your Messages</p>
                   </div>
                   <div className="p-3 bg-purple-50 rounded-xl">
-                    <p className="text-2xl font-bold text-purple-600">{sessionData.participation}%</p>
+                    <p className="text-2xl font-bold text-purple-600">{liveFeedback.participation}%</p>
                     <p className="text-sm text-gray-600">Engagement</p>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Chat Interface */}
+            {/* Enhanced Chat Interface */}
             <ChatInterface 
               isActive={sessionStarted}
               onMessageSent={handleChatMessage}
+              onFeedbackUpdate={handleFeedbackUpdate}
               aiParticipants={aiParticipants}
+              topic={topic.title}
             />
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Participants */}
+            {/* AI Participants */}
             <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Participants</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <Zap className="h-5 w-5 mr-2 text-blue-600" />
+                AI Participants
+              </h3>
               
               <div className="space-y-3">
-                <div className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 ${
-                  currentSpeaker === 0 ? 'bg-blue-100 border-2 border-blue-300' : 'bg-gray-50'
-                }`}>
+                <div className="flex items-center space-x-3 p-3 rounded-lg bg-blue-50 border-2 border-blue-200">
                   <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium">
                     You
                   </div>
                   <div className="flex-1">
                     <p className="font-medium text-gray-900">You</p>
-                    <p className="text-sm text-gray-600">Participant</p>
+                    <p className="text-sm text-gray-600">Human Participant</p>
                   </div>
-                  {currentSpeaker === 0 && <Volume2 className="h-5 w-5 text-blue-600 animate-pulse" />}
                 </div>
 
                 {aiParticipants.map((participant, index) => (
                   <div 
                     key={index}
                     className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 ${
-                      currentSpeaker === index + 1 ? 'bg-green-100 border-2 border-green-300' : 'bg-gray-50'
+                      participant.type === 'mentor' 
+                        ? 'bg-purple-50 border border-purple-200' 
+                        : 'bg-green-50 border border-green-200'
                     }`}
                   >
-                    <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-lg">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
+                      participant.type === 'mentor' ? 'bg-purple-500' : 'bg-green-500'
+                    }`}>
                       {participant.avatar}
                     </div>
                     <div className="flex-1">
                       <p className="font-medium text-gray-900">{participant.name}</p>
-                      <p className="text-sm text-gray-600">{participant.role}</p>
+                      <p className="text-sm text-gray-600">
+                        {participant.type === 'mentor' ? 'AI Mentor' : 'AI Student'}
+                      </p>
                     </div>
-                    {currentSpeaker === index + 1 && <Volume2 className="h-5 w-5 text-green-600 animate-pulse" />}
                   </div>
                 ))}
               </div>
@@ -298,32 +337,57 @@ const GDSimulation: React.FC = () => {
               </div>
             </div>
 
-            {/* Real-time Performance */}
+            {/* Live AI Feedback */}
             {sessionStarted && (
               <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Live Performance</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                  <Brain className="h-5 w-5 mr-2 text-purple-600" />
+                  Live AI Feedback
+                </h3>
                 
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
-                    <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">Clarity: {sessionData.clarity}%</p>
-                      <p className="text-xs text-gray-600">Good communication</p>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Clarity</span>
+                      <span className="font-medium">{liveFeedback.clarity}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${liveFeedback.clarity}%` }}
+                      />
                     </div>
                   </div>
-                  <div className="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
-                    <TrendingUp className="h-5 w-5 text-green-600 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">Participation: {sessionData.participation}%</p>
-                      <p className="text-xs text-gray-600">Active engagement</p>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Relevance</span>
+                      <span className="font-medium">{liveFeedback.relevance}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${liveFeedback.relevance}%` }}
+                      />
                     </div>
                   </div>
-                  <div className="flex items-start space-x-3 p-3 bg-purple-50 rounded-lg">
-                    <AlertCircle className="h-5 w-5 text-purple-600 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">Leadership: {sessionData.leadership}%</p>
-                      <p className="text-xs text-gray-600">Try taking more initiative</p>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Confidence</span>
+                      <span className="font-medium">{liveFeedback.confidence}%</span>
                     </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-purple-500 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${liveFeedback.confidence}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-blue-800 font-medium">AI Insight:</p>
+                    <p className="text-sm text-blue-700 mt-1">{liveFeedback.feedback}</p>
                   </div>
                 </div>
               </div>
@@ -347,13 +411,21 @@ const GDSimulation: React.FC = () => {
                 className="bg-white rounded-2xl p-8 max-w-md w-full text-center"
               >
                 <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <CheckCircle className="h-8 w-8 text-white" />
+                  {isAnalyzing ? (
+                    <Brain className="h-8 w-8 text-white animate-pulse" />
+                  ) : (
+                    <CheckCircle className="h-8 w-8 text-white" />
+                  )}
                 </div>
                 
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Session Complete!</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                  {isAnalyzing ? 'AI Analyzing Session...' : 'Session Complete!'}
+                </h3>
                 <p className="text-gray-600 mb-6">
-                  Great job! Your discussion session has been recorded and analyzed. 
-                  Redirecting to your detailed feedback...
+                  {isAnalyzing 
+                    ? 'Our AI is analyzing your performance and generating personalized feedback...'
+                    : 'Great job! Your discussion session has been analyzed. Redirecting to your detailed AI feedback...'
+                  }
                 </p>
                 
                 <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto" />
