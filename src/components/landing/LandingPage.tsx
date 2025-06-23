@@ -98,10 +98,10 @@ const LandingPage: React.FC = () => {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="space-y-20"
+        className="space-y-24"
       >
         {/* Hero Section */}
-        <section className="pt-20 pb-16">
+        <section className="pt-20 pb-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <motion.div variants={itemVariants} className="space-y-8">
@@ -268,7 +268,7 @@ const LandingPage: React.FC = () => {
         </section>
 
         {/* Features Section */}
-        <section id="features" className="py-20">
+        <section id="features" className="py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div variants={itemVariants} className="text-center mb-16">
               <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -301,97 +301,8 @@ const LandingPage: React.FC = () => {
           </div>
         </section>
 
-        {/* Benefits Section */}
-        <section className="py-20 bg-gradient-to-r from-blue-500 to-purple-600">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <motion.div variants={itemVariants}>
-                <h2 className="text-4xl font-bold text-white mb-6">
-                  Enhance Your Discussion Skills
-                </h2>
-                <p className="text-blue-100 text-lg mb-8">
-                  Join thousands of successful professionals who have improved their group discussion skills with our platform.
-                </p>
-                
-                <div className="space-y-4">
-                  {benefits.map((benefit, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="flex items-center space-x-3"
-                    >
-                      <CheckCircle className="h-6 w-6 text-green-300" />
-                      <span className="text-white">{benefit}</span>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-
-              <motion.div variants={itemVariants} className="relative">
-                <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20">
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-white font-semibold">Practice Benefits</h3>
-                      <Globe className="h-6 w-6 text-white/70" />
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-white text-sm">
-                          <span>Communication Skills</span>
-                          <span>92%</span>
-                        </div>
-                        <div className="w-full bg-white/20 rounded-full h-2">
-                          <motion.div 
-                            initial={{ width: 0 }}
-                            animate={{ width: '92%' }}
-                            transition={{ delay: 0.5, duration: 1 }}
-                            className="bg-gradient-to-r from-green-400 to-blue-400 h-2 rounded-full"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-white text-sm">
-                          <span>Confidence Building</span>
-                          <span>85%</span>
-                        </div>
-                        <div className="w-full bg-white/20 rounded-full h-2">
-                          <motion.div 
-                            initial={{ width: 0 }}
-                            animate={{ width: '85%' }}
-                            transition={{ delay: 0.7, duration: 1 }}
-                            className="bg-gradient-to-r from-yellow-400 to-orange-400 h-2 rounded-full"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-white text-sm">
-                          <span>Interview Readiness</span>
-                          <span>88%</span>
-                        </div>
-                        <div className="w-full bg-white/20 rounded-full h-2">
-                          <motion.div 
-                            initial={{ width: 0 }}
-                            animate={{ width: '88%' }}
-                            transition={{ delay: 0.9, duration: 1 }}
-                            className="bg-gradient-to-r from-purple-400 to-pink-400 h-2 rounded-full"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
         {/* CTA Section */}
-        <section className="py-20 bg-gradient-to-r from-gray-900 to-blue-900">
+        <section className="py-24 bg-gradient-to-r from-gray-900 to-blue-900">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <motion.div variants={itemVariants} className="space-y-8">
               <h2 className="text-4xl font-bold text-white">
