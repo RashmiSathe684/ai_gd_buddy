@@ -16,10 +16,7 @@ import {
   Globe,
   Brain,
   Zap,
-  FileText,
-  Star,
-  Trophy,
-  Briefcase
+  FileText
 } from 'lucide-react';
 
 const LandingPage: React.FC = () => {
@@ -57,36 +54,6 @@ const LandingPage: React.FC = () => {
     'Access 100+ curated discussion topics',
     'Improve confidence and communication skills',
     'Prepare for interviews and assessments'
-  ];
-
-  const successStories = [
-    {
-      name: 'Rahul Sharma',
-      company: 'TCS',
-      package: '₹7.5 LPA',
-      content: 'Cleared TCS group discussion round on first attempt after practicing here for just 2 weeks!',
-      rating: 5,
-      avatar: '👨‍💼',
-      improvement: '+40% confidence boost'
-    },
-    {
-      name: 'Priya Patel',
-      company: 'Infosys',
-      package: '₹6.8 LPA',
-      content: 'The AI feedback helped me identify my weak points. Got selected in campus placement!',
-      rating: 5,
-      avatar: '👩‍💻',
-      improvement: '+60% communication skills'
-    },
-    {
-      name: 'Arjun Kumar',
-      company: 'Wipro',
-      package: '₹8.2 LPA',
-      content: 'Amazing platform! The realistic practice sessions prepared me perfectly for actual interviews.',
-      rating: 5,
-      avatar: '👨‍🎓',
-      improvement: '+50% leadership skills'
-    }
   ];
 
   const containerVariants = {
@@ -340,7 +307,7 @@ const LandingPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <motion.div variants={itemVariants}>
                 <h2 className="text-4xl font-bold text-white mb-6">
-                  Transform Your Communication Skills
+                  Enhance Your Discussion Skills
                 </h2>
                 <p className="text-blue-100 text-lg mb-8">
                   Join thousands of successful professionals who have improved their group discussion skills with our platform.
@@ -366,7 +333,7 @@ const LandingPage: React.FC = () => {
                 <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20">
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-white font-semibold">Skill Development</h3>
+                      <h3 className="text-white font-semibold">Practice Benefits</h3>
                       <Globe className="h-6 w-6 text-white/70" />
                     </div>
                     
@@ -388,7 +355,7 @@ const LandingPage: React.FC = () => {
                       
                       <div className="space-y-2">
                         <div className="flex justify-between text-white text-sm">
-                          <span>Leadership</span>
+                          <span>Confidence Building</span>
                           <span>85%</span>
                         </div>
                         <div className="w-full bg-white/20 rounded-full h-2">
@@ -403,7 +370,7 @@ const LandingPage: React.FC = () => {
                       
                       <div className="space-y-2">
                         <div className="flex justify-between text-white text-sm">
-                          <span>Critical Thinking</span>
+                          <span>Interview Readiness</span>
                           <span>88%</span>
                         </div>
                         <div className="w-full bg-white/20 rounded-full h-2">
@@ -419,93 +386,6 @@ const LandingPage: React.FC = () => {
                   </div>
                 </div>
               </motion.div>
-            </div>
-          </div>
-        </section>
-
-        {/* Real Interview Success Stories Section */}
-        <section className="py-20 bg-gradient-to-br from-green-50 via-white to-blue-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div variants={itemVariants} className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                Real Interview Success Stories
-              </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Students who mastered group discussions and secured their dream placements
-              </p>
-            </motion.div>
-
-            {/* Success Metrics */}
-            <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-16">
-              <div className="text-center p-6 bg-white/70 backdrop-blur-lg rounded-2xl shadow-lg border border-white/20">
-                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Trophy className="h-8 w-8 text-white" />
-                </div>
-                <p className="text-3xl font-bold text-green-600 mb-2">95%</p>
-                <p className="text-gray-600 font-medium">Success Rate</p>
-              </div>
-              
-              <div className="text-center p-6 bg-white/70 backdrop-blur-lg rounded-2xl shadow-lg border border-white/20">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Briefcase className="h-8 w-8 text-white" />
-                </div>
-                <p className="text-3xl font-bold text-blue-600 mb-2">2,500+</p>
-                <p className="text-gray-600 font-medium">Placements</p>
-              </div>
-              
-              <div className="text-center p-6 bg-white/70 backdrop-blur-lg rounded-2xl shadow-lg border border-white/20">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <TrendingUp className="h-8 w-8 text-white" />
-                </div>
-                <p className="text-3xl font-bold text-purple-600 mb-2">₹8.5L</p>
-                <p className="text-gray-600 font-medium">Avg Package</p>
-              </div>
-              
-              <div className="text-center p-6 bg-white/70 backdrop-blur-lg rounded-2xl shadow-lg border border-white/20">
-                <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users className="h-8 w-8 text-white" />
-                </div>
-                <p className="text-3xl font-bold text-orange-600 mb-2">50+</p>
-                <p className="text-gray-600 font-medium">Top Companies</p>
-              </div>
-            </motion.div>
-
-            {/* Success Stories */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {successStories.map((story, index) => (
-                <motion.div
-                  key={index}
-                  variants={itemVariants}
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300"
-                >
-                  <div className="flex items-center space-x-4 mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-lg">
-                      {story.avatar}
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900">{story.name}</h4>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm text-blue-600 font-medium">{story.company}</span>
-                        <span className="text-sm text-green-600 font-bold">{story.package}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <p className="text-gray-700 mb-4 italic">"{story.content}"</p>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-1">
-                      {[...Array(story.rating)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
-                      ))}
-                    </div>
-                    <span className="text-sm text-green-600 font-medium bg-green-100 px-2 py-1 rounded-full">
-                      {story.improvement}
-                    </span>
-                  </div>
-                </motion.div>
-              ))}
             </div>
           </div>
         </section>
