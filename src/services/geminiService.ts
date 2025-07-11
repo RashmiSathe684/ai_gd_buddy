@@ -1,45 +1,39 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { apiConfig, validateApiKey, APIConfigError } from '../config/apiConfig';
+import { API_KEY } from '../config/apiConfig';
 
-// Initialize Gemini AI
 let genAI: GoogleGenerativeAI | null = null;
-let model: any = null;
 
-export const initializeGemini = (apiKey?: string) => {
+// Initialize Gemini with hardcoded API key
+export const initializeGemini = (apiKey?: string): void => {
+  const keyToUse = apiKey || API_KEY;
+  
+  if (!keyToUse) {
+    throw new Error('No API key available for Gemini initialization');
+  }
+
   try {
-    // Use provided API key or get from environment
-    const keyToUse = apiKey || apiConfig.getGeminiApiKey();
-    
-    // Validate API key format
-    if (!validateApiKey(keyToUse, 'gemini')) {
-      throw new APIConfigError('Invalid Gemini API key format', 'gemini');
-    }
-    
     genAI = new GoogleGenerativeAI(keyToUse);
-    
     console.log('✅ Gemini API initialized successfully');
   } catch (error) {
     console.error('❌ Failed to initialize Gemini API:', error);
     throw error;
   }
-  model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 };
-// Auto-initialize if API key is available in environment
-export const autoInitializeGemini = () => {
+
+// Auto-initialize with hardcoded API key
+export const autoInitializeGemini = (): boolean => {
   try {
-    if (apiConfig.isGeminiConfigured()) {
-      initializeGemini();
-      return true;
-    }
-    return false;
+    initializeGemini(API_KEY);
+    return true;
   } catch (error) {
-    console.warn('Auto-initialization failed, manual setup required:', error);
+    console.error('Auto-initialization failed:', error);
     return false;
   }
 };
 
-export const isGeminiInitialized = () => {
-  return genAI !== null && model !== null;
+// Check if Gemini is initialized
+export const isGeminiInitialized = (): boolean => {
+  return genAI !== null;
 };
 
 // Generate AI participant response
@@ -50,55 +44,40 @@ export const generateParticipantResponse = async (
   conversationHistory: string[],
   userMessage?: string
 ): Promise<string> => {
-  if (!model) {
+  if (!genAI) {
     throw new Error('Gemini API not initialized');
   }
 
-  const context = conversationHistory.slice(-5).join('\n');
-  
-  let prompt = '';
-  
-  if (participantType === 'student') {
-    prompt = `You are ${participantName}, a college student participating in a group discussion about "${topic}". 
-    
-    Context of recent conversation:
-    ${context}
-    
-    ${userMessage ? `The user just said: "${userMessage}"` : ''}
-    
-    Respond as a student would - be engaging, thoughtful, but not overly formal or professional. Keep responses conversational and around 1-2 sentences. Show different perspectives and sometimes ask questions to keep the discussion flowing. Be natural and authentic.
-    
-    Generate only your response, no labels or formatting:`;
-  } else {
-    prompt = `You are ${participantName}, a mentor facilitating a group discussion about "${topic}". 
-    
-    Context of recent conversation:
-    ${context}
-    
-    ${userMessage ? `The user just said: "${userMessage}"` : ''}
-    
-    As a mentor, occasionally guide the discussion, ask probing questions, summarize key points, or redirect if needed. Don't dominate - let students lead most of the time. Keep responses brief and supportive. Sometimes acknowledge good points made by participants.
-    
-    Generate only your response, no labels or formatting:`;
-  }
-
   try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    
+    const context = conversationHistory.slice(-5).join('\n');
+    const recentUserInput = userMessage ? `\nUser just said: "${userMessage}"` : '';
+    
+    const prompt = participantType === 'mentor' 
+      ? `You are ${participantName}, an experienced mentor facilitating a group discussion on "${topic}". 
+         Recent conversation: ${context}${recentUserInput}
+         
+         Provide guidance, ask thought-provoking questions, or summarize key points. Keep response under 100 words and maintain a supportive, professional tone.`
+      : `You are ${participantName}, a student participating in a group discussion on "${topic}".
+         Recent conversation: ${context}${recentUserInput}
+         
+         Share your perspective, ask questions, or build on others' ideas. Keep response under 80 words and sound natural and engaging.`;
+
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    return response.text().trim();
+    return response.text();
   } catch (error) {
     console.error('Error generating participant response:', error);
-    return participantType === 'student' 
-      ? "That's an interesting point. I'd like to hear more perspectives on this."
-      : "Let's continue exploring this topic. What do others think?";
+    throw error;
   }
 };
 
-// Generate real-time feedback for user input
+// Generate live feedback
 export const generateLiveFeedback = async (
   userMessage: string,
   topic: string,
-  sessionContext: string
+  recentContext: string
 ): Promise<{
   clarity: number;
   relevance: number;
@@ -106,252 +85,46 @@ export const generateLiveFeedback = async (
   participation: number;
   feedback: string;
 }> => {
-  if (!model) {
+  if (!genAI) {
     throw new Error('Gemini API not initialized');
   }
 
-  const prompt = `Analyze this group discussion contribution for a topic "${topic}":
-
-  User's message: "${userMessage}"
-  Session context: ${sessionContext}
-
-  Provide scores (0-100) and brief feedback on:
-  1. Clarity - How clear and well-articulated is the message?
-  2. Relevance - How relevant is it to the topic?
-  3. Confidence - How confident does the speaker sound?
-  4. Participation - Quality of engagement with the discussion
-
-  Respond in this exact JSON format:
-  {
-    "clarity": 85,
-    "relevance": 90,
-    "confidence": 80,
-    "participation": 88,
-    "feedback": "Good point with clear reasoning. Try to engage more with others' perspectives."
-  }`;
-
   try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    
+    const prompt = `Analyze this group discussion contribution:
+    Topic: "${topic}"
+    User message: "${userMessage}"
+    Recent context: ${recentContext}
+    
+    Provide scores (0-100) and brief feedback:
+    - Clarity: How clear and well-structured is the message?
+    - Relevance: How relevant is it to the topic?
+    - Confidence: How confident does the participant sound?
+    - Participation: How well does it engage with the discussion?
+    
+    Format: Clarity:X,Relevance:Y,Confidence:Z,Participation:W,Feedback:Brief constructive feedback`;
+
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text().trim();
+    const text = response.text();
     
-    // Extract JSON from response
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
+    // Parse the response
+    const clarityMatch = text.match(/Clarity:(\d+)/);
+    const relevanceMatch = text.match(/Relevance:(\d+)/);
+    const confidenceMatch = text.match(/Confidence:(\d+)/);
+    const participationMatch = text.match(/Participation:(\d+)/);
+    const feedbackMatch = text.match(/Feedback:(.+)/);
     
-    // Fallback if JSON parsing fails
     return {
-      clarity: 75,
-      relevance: 80,
-      confidence: 70,
-      participation: 75,
-      feedback: "Keep contributing to the discussion!"
+      clarity: clarityMatch ? parseInt(clarityMatch[1]) : 75,
+      relevance: relevanceMatch ? parseInt(relevanceMatch[1]) : 75,
+      confidence: confidenceMatch ? parseInt(confidenceMatch[1]) : 75,
+      participation: participationMatch ? parseInt(participationMatch[1]) : 75,
+      feedback: feedbackMatch ? feedbackMatch[1].trim() : 'Good contribution to the discussion!'
     };
   } catch (error) {
     console.error('Error generating live feedback:', error);
-    return {
-      clarity: 75,
-      relevance: 80,
-      confidence: 70,
-      participation: 75,
-      feedback: "Keep contributing to the discussion!"
-    };
-  }
-};
-
-// Generate comprehensive session analysis
-export const generateSessionAnalysis = async (
-  topic: string,
-  userMessages: string[],
-  sessionDuration: number,
-  conversationHistory: string[]
-): Promise<{
-  overallScore: number;
-  metrics: {
-    participation: number;
-    clarity: number;
-    relevance: number;
-    leadership: number;
-    criticalThinking: number;
-    activeListening: number;
-    confidence: number;
-  };
-  strengths: string[];
-  improvements: string[];
-  keyMoments: Array<{
-    time: string;
-    type: 'strength' | 'improvement';
-    description: string;
-  }>;
-  detailedFeedback: string;
-}> => {
-  if (!model) {
-    throw new Error('Gemini API not initialized');
-  }
-
-  const userContributions = userMessages.join('\n');
-  const fullConversation = conversationHistory.join('\n');
-
-  const prompt = `Analyze this group discussion session on "${topic}" (Duration: ${sessionDuration} minutes):
-
-  User's contributions:
-  ${userContributions}
-
-  Full conversation context:
-  ${fullConversation}
-
-  Provide a comprehensive analysis in this exact JSON format:
-  {
-    "overallScore": 85,
-    "metrics": {
-      "participation": 80,
-      "clarity": 85,
-      "relevance": 90,
-      "leadership": 75,
-      "criticalThinking": 88,
-      "activeListening": 82,
-      "confidence": 78
-    },
-    "strengths": [
-      "Clear articulation of ideas",
-      "Strong logical reasoning",
-      "Good use of examples"
-    ],
-    "improvements": [
-      "Could engage more with others' points",
-      "Try to take more initiative in leading discussions"
-    ],
-    "keyMoments": [
-      {
-        "time": "2:15",
-        "type": "strength",
-        "description": "Excellent point about practical applications"
-      },
-      {
-        "time": "4:30",
-        "type": "improvement", 
-        "description": "Missed opportunity to build on Riley's argument"
-      }
-    ],
-    "detailedFeedback": "Overall strong performance with clear communication and relevant contributions. Focus on more interactive engagement with other participants."
-  }`;
-
-  try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text().trim();
-    
-    // Extract JSON from response
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const analysis = JSON.parse(jsonMatch[0]);
-      return analysis;
-    }
-    
-    // Fallback analysis
-    return {
-      overallScore: 75,
-      metrics: {
-        participation: 75,
-        clarity: 80,
-        relevance: 85,
-        leadership: 70,
-        criticalThinking: 78,
-        activeListening: 72,
-        confidence: 75
-      },
-      strengths: [
-        "Active participation in discussion",
-        "Clear communication style",
-        "Relevant contributions to topic"
-      ],
-      improvements: [
-        "Try to engage more with other participants",
-        "Consider alternative viewpoints",
-        "Take more leadership initiative"
-      ],
-      keyMoments: [
-        {
-          time: "2:00",
-          type: "strength",
-          description: "Made a strong opening statement"
-        },
-        {
-          time: "5:30",
-          type: "improvement",
-          description: "Could have responded to mentor's question more directly"
-        }
-      ],
-      detailedFeedback: "Good overall performance with room for improvement in interactive engagement and leadership skills."
-    };
-  } catch (error) {
-    console.error('Error generating session analysis:', error);
     throw error;
   }
-};
-
-// Generate discussion starter for topic
-export const generateDiscussionStarter = async (topic: string): Promise<string> => {
-  if (!model) {
-    throw new Error('Gemini API not initialized');
-  }
-
-  const prompt = `Generate an engaging opening statement for a group discussion on "${topic}". 
-  
-  The statement should:
-  - Be thought-provoking and encourage participation
-  - Present a clear perspective or question
-  - Be 1-2 sentences long
-  - Sound natural and conversational
-  
-  Generate only the opening statement, no labels:`;
-
-  try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text().trim();
-  } catch (error) {
-    console.error('Error generating discussion starter:', error);
-    return `Let's explore the various aspects of ${topic} and share our different perspectives on this important issue.`;
-  }
-};
-
-// Generate random student participants with updated names
-export const generateParticipants = async (): Promise<Array<{
-  name: string;
-  type: 'student' | 'mentor';
-  avatar: string;
-  personality: string;
-}>> => {
-  const studentNames = [
-    'Alex', 'Riley', 'Jordan', 'Casey', 'Morgan', 'Taylor', 'Avery',
-    'Quinn', 'Blake', 'Sage', 'River', 'Skylar', 'Rowan', 'Phoenix'
-  ];
-  
-  const mentorNames = [
-    'Dr. Smith', 'Prof. Smith', 'Ms. Williams', 'Mr. Brown', 'Dr. Davis'
-  ];
-
-  const avatars = ['👨‍🎓', '👩‍🎓', '🧑‍🎓', '👨‍💼', '👩‍💼'];
-  const mentorAvatars = ['👨‍🏫', '👩‍🏫', '🧑‍🏫'];
-
-  // Select 2 random students (ensuring Riley is included)
-  const selectedStudents = ['Riley', 'Alex'].map((name, index) => ({
-    name,
-    type: 'student' as const,
-    avatar: avatars[index % avatars.length],
-    personality: 'curious and engaged'
-  }));
-
-  // Select Prof. Smith as mentor
-  const selectedMentor = {
-    name: 'Prof. Smith',
-    type: 'mentor' as const,
-    avatar: mentorAvatars[0],
-    personality: 'supportive and guiding'
-  };
-
-  return [...selectedStudents, selectedMentor];
 };

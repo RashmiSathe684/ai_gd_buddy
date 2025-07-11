@@ -3,11 +3,13 @@
  * Handles secure API key management and client initialization
  */
 
-// Environment variable validation
+// Global API key constant
+const API_KEY = "AIzaSyAUrqooYmPBUXLcY6scct1Aj4bwRDlcryc";
+
+// Environment variable validation (excluding Gemini API key)
 const validateEnvironmentVariables = () => {
   const requiredVars = {
-    VITE_GEMINI_API_KEY: import.meta.env.VITE_GEMINI_API_KEY,
-    // Add other required environment variables here
+    // Add other required environment variables here (excluding VITE_GEMINI_API_KEY)
   };
 
   const missingVars = Object.entries(requiredVars)
@@ -15,8 +17,7 @@ const validateEnvironmentVariables = () => {
     .map(([key]) => key);
 
   if (missingVars.length > 0) {
-    console.error('Missing required environment variables:', missingVars);
-    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+    console.warn('Missing optional environment variables:', missingVars);
   }
 
   return requiredVars;
@@ -30,12 +31,15 @@ export class APIConfig {
 
   private constructor() {
     try {
-      const envVars = validateEnvironmentVariables();
-      this.geminiApiKey = envVars.VITE_GEMINI_API_KEY;
+      validateEnvironmentVariables();
+      // Use hardcoded API key for Gemini
+      this.geminiApiKey = API_KEY;
       this.openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY || '';
     } catch (error) {
       console.error('Failed to initialize API configuration:', error);
-      throw error;
+      // Still use hardcoded API key even if validation fails
+      this.geminiApiKey = API_KEY;
+      this.openaiApiKey = '';
     }
   }
 
@@ -47,9 +51,6 @@ export class APIConfig {
   }
 
   public getGeminiApiKey(): string {
-    if (!this.geminiApiKey) {
-      throw new Error('Gemini API key is not configured. Please check your environment variables.');
-    }
     return this.geminiApiKey;
   }
 
@@ -71,6 +72,9 @@ export class APIConfig {
 
 // Export singleton instance
 export const apiConfig = APIConfig.getInstance();
+
+// Export the global API key constant
+export { API_KEY };
 
 // Utility functions for API key validation
 export const validateApiKey = (apiKey: string, provider: 'gemini' | 'openai'): boolean => {
@@ -100,7 +104,7 @@ export const checkAPIConfiguration = () => {
   const config = APIConfig.getInstance();
   
   console.log('API Configuration Status:');
-  console.log('- Gemini API:', config.isGeminiConfigured() ? '✅ Configured' : '❌ Missing');
+  console.log('- Gemini API:', config.isGeminiConfigured() ? '✅ Configured (Hardcoded)' : '❌ Missing');
   console.log('- OpenAI API:', config.isOpenAIConfigured() ? '✅ Configured' : '❌ Missing');
   
   if (import.meta.env.DEV) {
