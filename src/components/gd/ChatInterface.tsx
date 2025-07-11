@@ -5,8 +5,10 @@ import {
   generateParticipantResponse, 
   generateLiveFeedback, 
   isGeminiInitialized,
-  initializeGemini 
+  initializeGemini,
+  autoInitializeGemini
 } from '../../services/geminiService';
+import { checkAPIConfiguration } from '../../config/apiConfig';
 import toast from 'react-hot-toast';
 
 interface Message {
@@ -66,8 +68,18 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   // Check if Gemini is initialized on component mount
   useEffect(() => {
-    if (!isGeminiInitialized()) {
+    // Try auto-initialization first
+    const autoInitialized = autoInitializeGemini();
+    
+    if (!autoInitialized && !isGeminiInitialized()) {
       setShowApiKeyModal(true);
+    } else if (autoInitialized) {
+      console.log('✅ Gemini auto-initialized from environment variables');
+    }
+    
+    // Development helper
+    if (import.meta.env.DEV) {
+      checkAPIConfiguration();
     }
   }, []);
 

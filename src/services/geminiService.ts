@@ -1,12 +1,41 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { apiConfig, validateApiKey, APIConfigError } from '../config/apiConfig';
 
 // Initialize Gemini AI
 let genAI: GoogleGenerativeAI | null = null;
 let model: any = null;
 
-export const initializeGemini = (apiKey: string) => {
-  genAI = new GoogleGenerativeAI(apiKey);
+export const initializeGemini = (apiKey?: string) => {
+  try {
+    // Use provided API key or get from environment
+    const keyToUse = apiKey || apiConfig.getGeminiApiKey();
+    
+    // Validate API key format
+    if (!validateApiKey(keyToUse, 'gemini')) {
+      throw new APIConfigError('Invalid Gemini API key format', 'gemini');
+    }
+    
+    genAI = new GoogleGenerativeAI(keyToUse);
+    
+    console.log('✅ Gemini API initialized successfully');
+  } catch (error) {
+    console.error('❌ Failed to initialize Gemini API:', error);
+    throw error;
+  }
   model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+};
+// Auto-initialize if API key is available in environment
+export const autoInitializeGemini = () => {
+  try {
+    if (apiConfig.isGeminiConfigured()) {
+      initializeGemini();
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.warn('Auto-initialization failed, manual setup required:', error);
+    return false;
+  }
 };
 
 export const isGeminiInitialized = () => {
