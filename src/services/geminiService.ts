@@ -128,3 +128,93 @@ export const generateLiveFeedback = async (
     throw error;
   }
 };
+
+// Generate AI participants for group discussion
+export const generateParticipants = async (
+  topic: string,
+  participantCount: number = 4
+): Promise<Array<{
+  id: string;
+  name: string;
+  type: 'student' | 'mentor';
+  avatar: string;
+  personality: string;
+}>> => {
+  if (!genAI) {
+    console.warn('Gemini API not initialized, using fallback participants');
+    return getFallbackParticipants();
+  }
+
+  try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    
+    const prompt = `Generate ${participantCount} diverse AI participants for a group discussion on "${topic}".
+    Include a mix of students and 1 mentor. Return ONLY a JSON array with this exact format:
+    [
+      {
+        "id": "unique_id",
+        "name": "First Name",
+        "type": "student",
+        "avatar": "👤",
+        "personality": "brief personality description"
+      }
+    ]
+    
+    Requirements:
+    - Use names: Riley, Alex, Jordan, Prof. Smith
+    - 1 mentor (Prof. Smith), rest students
+    - Diverse personalities (analytical, creative, practical, etc.)
+    - Use simple emoji avatars like 👤, 👨, 👩, 🧑, 👨‍🏫`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    // Try to parse JSON response
+    try {
+      const participants = JSON.parse(text);
+      if (Array.isArray(participants) && participants.length > 0) {
+        return participants;
+      }
+    } catch (parseError) {
+      console.warn('Failed to parse AI-generated participants, using fallback');
+    }
+    
+    return getFallbackParticipants();
+  } catch (error) {
+    console.error('Error generating participants:', error);
+    return getFallbackParticipants();
+  }
+};
+
+// Fallback participants when AI generation fails
+const getFallbackParticipants = () => [
+  {
+    id: 'participant-1',
+    name: 'Riley',
+    type: 'student' as const,
+    avatar: '👤',
+    personality: 'Analytical thinker who likes to break down complex problems'
+  },
+  {
+    id: 'participant-2',
+    name: 'Alex',
+    type: 'student' as const,
+    avatar: '👨',
+    personality: 'Creative and innovative, always brings fresh perspectives'
+  },
+  {
+    id: 'participant-3',
+    name: 'Jordan',
+    type: 'student' as const,
+    avatar: '👩',
+    personality: 'Practical and solution-oriented, focuses on real-world applications'
+  },
+  {
+    id: 'mentor-1',
+    name: 'Prof. Smith',
+    type: 'mentor' as const,
+    avatar: '👨‍🏫',
+    personality: 'Experienced mentor who guides discussions and provides insights'
+  }
+];
