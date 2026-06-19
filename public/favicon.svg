@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <!-- Vibrant Indigo to Purple Gradient -->
+    <linearGradient id="bubbleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5" />
+      <stop offset="100%" stop-color="#9333EA" />
+    </linearGradient>
+    <!-- Glowing Sparkle/AI Gradient -->
+    <linearGradient id="sparkleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#34D399" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Speech Bubble Background -->
+  <path d="M 20 15 H 80 A 15 15 0 0 1 95 30 V 60 A 15 15 0 0 1 80 75 H 45 L 25 90 V 75 H 20 A 15 15 0 0 1 5 60 V 30 A 15 15 0 0 1 20 15 Z" fill="url(#bubbleGrad)" />
+
+  <!-- Brain / AI Sparkle Icon in the center -->
+  <!-- Sparkle 1 (Large Center) -->
+  <path d="M 50 30 Q 50 45 65 45 Q 50 45 50 60 Q 50 45 35 45 Q 50 45 50 30 Z" fill="url(#sparkleGrad)" filter="url(#glow)" />
+  
+  <!-- Sparkle 2 (Small Top Right) -->
+  <path d="M 70 28 Q 70 35 77 35 Q 70 35 70 42 Q 70 35 63 35 Q 70 35 70 28 Z" fill="#FFFFFF" opacity="0.9" />
+
+  <!-- Chat Lines (Micro-details representing communication) -->
+  <rect x="25" y="38" width="12" height="4" rx="2" fill="#FFFFFF" opacity="0.6" />
+  <rect x="25" y="48" width="8" height="4" rx="2" fill="#FFFFFF" opacity="0.6" />
+</svg>

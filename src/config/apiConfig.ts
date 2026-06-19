@@ -32,13 +32,14 @@ export class APIConfig {
   private constructor() {
     try {
       validateEnvironmentVariables();
-      // Use hardcoded API key for Gemini
-      this.geminiApiKey = API_KEY;
+      // Try env variable first, fall back to hardcoded API key
+      const envKey = import.meta.env.VITE_GEMINI_API_KEY;
+      this.geminiApiKey = (envKey && envKey !== 'your-gemini-api-key-here') ? envKey : API_KEY;
       this.openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY || '';
     } catch (error) {
       console.error('Failed to initialize API configuration:', error);
-      // Still use hardcoded API key even if validation fails
-      this.geminiApiKey = API_KEY;
+      const envKey = import.meta.env.VITE_GEMINI_API_KEY;
+      this.geminiApiKey = (envKey && envKey !== 'your-gemini-api-key-here') ? envKey : API_KEY;
       this.openaiApiKey = '';
     }
   }

@@ -40,6 +40,9 @@ interface SessionAnalysis {
     description: string;
   }>;
   detailedFeedback: string;
+  topicTitle?: string;
+  duration?: string;
+  participants?: number;
 }
 
 const FeedbackSummary: React.FC = () => {
@@ -62,10 +65,10 @@ const FeedbackSummary: React.FC = () => {
   }, []);
 
   const sessionData = {
-    topic: 'Artificial Intelligence in Healthcare',
-    duration: '8:24',
+    topic: analysis?.topicTitle || 'Generative AI & Deepfakes: The Death of Digital Trust?',
+    duration: analysis?.duration || '6:45',
     date: new Date().toLocaleDateString(),
-    participants: 4
+    participants: analysis?.participants || 3
   };
 
   // Convert metrics to skill breakdown format

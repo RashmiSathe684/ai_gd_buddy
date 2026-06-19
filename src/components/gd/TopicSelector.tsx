@@ -288,7 +288,7 @@ const TopicSelector: React.FC = () => {
               <div className="flex items-center space-x-4 mb-4 text-sm text-gray-500">
                 <div className="flex items-center space-x-1">
                   <Users className="h-4 w-4" />
-                  <span>3-4 participants</span>
+                  <span>{topic.participants} participants</span>
                 </div>
               </div>
 

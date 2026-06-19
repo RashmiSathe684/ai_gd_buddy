@@ -33,149 +33,171 @@ export const initializeDefaultTopics = async (): Promise<void> => {
     const topicsRef = collection(db, 'topics');
     const snapshot = await getDocs(topicsRef);
     
-    // Only initialize if no topics exist
-    if (snapshot.empty) {
+    // Check if we need to reset/update the default topics in Firebase
+    let needsReset = false;
+    if (!snapshot.empty) {
+      for (const doc of snapshot.docs) {
+        const data = doc.data();
+        // If the old topics or old participant count format is present, trigger reset
+        if (data.title === 'Artificial Intelligence in Healthcare' || data.participants === '4-6' || data.participants === '3-5') {
+          needsReset = true;
+          break;
+        }
+      }
+    }
+
+    // Initialize or reset
+    if (snapshot.empty || needsReset) {
+      console.log('🔄 Syncing default topics in Firebase...');
+      
+      // Clear existing topics if we need a reset
+      if (!snapshot.empty) {
+        for (const doc of snapshot.docs) {
+          await deleteDoc(doc.ref);
+        }
+      }
+
       const defaultTopics: Omit<GDTopic, 'id'>[] = [
         {
-          title: 'Artificial Intelligence in Healthcare',
-          description: 'Discuss the impact of AI on modern healthcare systems and patient care.',
+          title: 'Generative AI & Deepfakes: The Death of Digital Trust?',
+          description: 'Debate the impact of generative AI and deepfakes on media integrity, cybersecurity, and public trust.',
           category: 'Technology',
-          difficulty: 'Advanced',
-          duration: '8-10 mins',
-          participants: '4-6',
-          popularity: 92,
-          tags: ['AI', 'Healthcare', 'Ethics', 'Innovation'],
+          difficulty: 'Intermediate',
+          duration: '6-8 mins',
+          participants: '2-3',
+          popularity: 95,
+          tags: ['AI', 'Deepfakes', 'Ethics', 'Digital Trust'],
           keyPoints: [
-            'AI diagnostic accuracy vs human expertise',
-            'Privacy and security concerns',
-            'Cost implications and accessibility',
-            'Ethical considerations in AI decision-making'
+            'Realism of AI-generated media vs detection capabilities',
+            'Threat of deepfakes in elections and misinformation',
+            'Identity theft and intellectual property concerns',
+            'Regulatory frameworks and content authentication standards'
           ],
           createdAt: new Date(),
           updatedAt: new Date()
         },
         {
-          title: 'Climate Change Solutions',
-          description: 'Explore sustainable approaches to combat climate change globally.',
+          title: 'Electric Vehicles: Green Future or Environmental Illusion?',
+          description: 'Analyze whether switching to EVs is the ultimate solution to climate change or if it has hidden costs.',
           category: 'Environment',
           difficulty: 'Intermediate',
           duration: '6-8 mins',
-          participants: '3-5',
+          participants: '2-3',
           popularity: 88,
-          tags: ['Environment', 'Sustainability', 'Policy', 'Global'],
+          tags: ['Environment', 'EVs', 'Sustainability', 'Technology'],
           keyPoints: [
-            'Renewable energy adoption',
-            'Carbon footprint reduction strategies',
-            'Government policies and regulations',
-            'Individual vs collective responsibility'
+            'Zero tailpipe emissions vs battery manufacturing pollution',
+            'Lithium mining impact on communities and ecosystem',
+            'Grid capability and source of charging electricity (coal vs solar)',
+            'Recycling challenges of expired lithium-ion batteries'
           ],
           createdAt: new Date(),
           updatedAt: new Date()
         },
         {
-          title: 'Digital Privacy Rights',
-          description: 'Debate the balance between digital convenience and privacy protection.',
+          title: 'Social Media Algorithms: Freedom of Speech or Mind Control?',
+          description: 'Debate the influence of AI recommendation engines on public opinion, polarization, and user addiction.',
           category: 'Technology',
           difficulty: 'Advanced',
           duration: '7-9 mins',
-          participants: '4-6',
+          participants: '2-3',
           popularity: 85,
-          tags: ['Privacy', 'Technology', 'Rights', 'Security'],
+          tags: ['Algorithms', 'Social Media', 'AI', 'Ethics'],
           keyPoints: [
-            'Data collection by tech companies',
-            'Government surveillance concerns',
-            'User consent and awareness',
-            'Regulatory frameworks needed'
+            'Echo chambers and reinforcement of extreme viewpoints',
+            'Ethical responsibility of tech giants to prevent addiction',
+            'User privacy and monetization of personal behavioral data',
+            'Government regulations vs platform censorship rights'
           ],
           createdAt: new Date(),
           updatedAt: new Date()
         },
         {
-          title: 'Future of Remote Work',
-          description: 'Analyze the long-term implications of remote work on society and economy.',
+          title: 'AI Automation: Will ChatGPT Take Our Jobs or Create New Ones?',
+          description: 'Discuss the long-term impact of Large Language Models on white-collar professionals, education, and employment.',
           category: 'Business',
           difficulty: 'Intermediate',
           duration: '6-8 mins',
-          participants: '3-5',
-          popularity: 90,
-          tags: ['Work', 'Technology', 'Society', 'Economy'],
+          participants: '2-3',
+          popularity: 92,
+          tags: ['AI', 'Jobs', 'Business', 'Future of Work'],
           keyPoints: [
-            'Work-life balance challenges',
-            'Impact on urban development',
-            'Technology infrastructure requirements',
-            'Employee productivity and collaboration'
+            'Displacement of content creators, coders, and administrators',
+            'Emergence of new roles like Prompt Engineers and AI Auditors',
+            'Upskilling workforce to collaborate with AI assistants',
+            'Economic inequality and the concept of Universal Basic Income'
           ],
           createdAt: new Date(),
           updatedAt: new Date()
         },
         {
-          title: 'Mental Health Awareness',
-          description: 'Discuss strategies to improve mental health support in communities.',
+          title: 'Social Media & Teen Mental Health: A Modern Crisis?',
+          description: 'Discuss the link between screen time, social comparison, and rising anxiety levels in teenagers.',
           category: 'Health',
           difficulty: 'Beginner',
           duration: '5-7 mins',
-          participants: '3-4',
+          participants: '2-3',
           popularity: 86,
-          tags: ['Health', 'Society', 'Support', 'Awareness'],
+          tags: ['Mental Health', 'Teenagers', 'Social Media', 'Awareness'],
           keyPoints: [
-            'Reducing stigma around mental health',
-            'Accessible mental health services',
-            'Role of social media and technology',
-            'Community support systems'
+            'Impact of likes and notifications on brain dopamine loops',
+            'Cyberbullying and online peer pressure',
+            'Curating perfect lifestyles vs real-world body image issues',
+            'Strategies for digital detox and healthy online boundaries'
           ],
           createdAt: new Date(),
           updatedAt: new Date()
         },
         {
-          title: 'Cryptocurrency and Economy',
-          description: 'Examine the role of digital currencies in the global financial system.',
+          title: 'DeFi & Bitcoin: Future of Money or Financial Bubble?',
+          description: 'Examine the role of decentralized finance and cryptocurrencies in replacing traditional banking.',
           category: 'Business',
           difficulty: 'Advanced',
           duration: '8-10 mins',
-          participants: '4-6',
+          participants: '2-3',
           popularity: 82,
-          tags: ['Finance', 'Technology', 'Economy', 'Innovation'],
+          tags: ['Finance', 'Crypto', 'DeFi', 'Economy'],
           keyPoints: [
-            'Cryptocurrency adoption and regulation',
-            'Impact on traditional banking',
-            'Environmental concerns of mining',
-            'Financial inclusion opportunities'
+            'Decentralization and elimination of middlemen in transactions',
+            'Extreme volatility and risks of investor speculation',
+            'Central Bank Digital Currencies (CBDCs) vs public crypto',
+            'Regulatory frameworks to prevent illegal financial activities'
           ],
           createdAt: new Date(),
           updatedAt: new Date()
         },
         {
-          title: 'Social Media Impact on Youth',
-          description: 'Analyze how social media platforms affect young people\'s development.',
+          title: 'Cyberbullying and Digital Well-being on TikTok',
+          description: 'Analyze how viral video platforms affect teen psychology, self-esteem, and social dynamics.',
           category: 'Society',
           difficulty: 'Intermediate',
           duration: '6-8 mins',
-          participants: '4-5',
+          participants: '2-3',
           popularity: 89,
-          tags: ['Social Media', 'Youth', 'Psychology', 'Technology'],
+          tags: ['TikTok', 'Society', 'Well-being', 'Psychology'],
           keyPoints: [
-            'Mental health and self-esteem issues',
-            'Cyberbullying and online safety',
-            'Educational opportunities and resources',
-            'Digital literacy and critical thinking'
+            'Short attention spans and addictive content delivery loops',
+            'Spread of viral challenges that pose physical danger',
+            'Online harassment, body shaming, and lack of content moderation',
+            'Educational content and micro-learning opportunities'
           ],
           createdAt: new Date(),
           updatedAt: new Date()
         },
         {
-          title: 'Sustainable Transportation',
-          description: 'Discuss eco-friendly transportation solutions for urban areas.',
+          title: 'Smart Cities & Autonomous Cars: Are We Ready?',
+          description: 'Discuss the technological, ethical, and infrastructure readiness for self-driving vehicles on public roads.',
           category: 'Environment',
           difficulty: 'Intermediate',
           duration: '7-9 mins',
-          participants: '4-6',
+          participants: '2-3',
           popularity: 84,
-          tags: ['Transportation', 'Environment', 'Urban Planning', 'Technology'],
+          tags: ['Smart Cities', 'Autonomous Cars', 'Technology', 'Safety'],
           keyPoints: [
-            'Electric vehicles vs public transport',
-            'Infrastructure development needs',
-            'Economic feasibility and costs',
-            'Behavioral change and adoption'
+            'Reduction of traffic accidents vs AI decision errors',
+            'The "Trolley Problem": Ethical choices in unavoidable crashes',
+            'Infrastructure and 5G network requirements for smart traffic',
+            'Impact on taxi, bus, and truck driver employment'
           ],
           createdAt: new Date(),
           updatedAt: new Date()
@@ -187,7 +209,7 @@ export const initializeDefaultTopics = async (): Promise<void> => {
         await addDoc(topicsRef, topic);
       }
       
-      console.log('Default topics initialized in Firebase');
+      console.log('✅ Trendy topics initialized in Firebase');
     }
   } catch (error) {
     console.error('Error initializing default topics:', error);

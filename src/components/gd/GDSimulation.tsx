@@ -92,25 +92,26 @@ const GDSimulation: React.FC = () => {
     loadTopic();
   }, [topicId, navigate]);
 
-  // Generate AI participants on component mount
+  // Generate AI participants when topic is loaded
   useEffect(() => {
     const initializeParticipants = async () => {
+      if (!topic) return;
       try {
-        const participants = await generateParticipants();
+        // Generate only 2 AI participants for a more focused discussion
+        const participants = await generateParticipants(topic.title, 2);
         setAiParticipants(participants);
       } catch (error) {
         console.error('Error generating participants:', error);
-        // Fallback participants
+        // Fallback to 2 participants (1 student, 1 mentor)
         setAiParticipants([
           { name: 'Alex', type: 'student', avatar: '👨‍🎓', personality: 'curious' },
-          { name: 'Sam', type: 'student', avatar: '👩‍🎓', personality: 'analytical' },
           { name: 'Dr. Smith', type: 'mentor', avatar: '👨‍🏫', personality: 'guiding' }
         ]);
       }
     };
 
     initializeParticipants();
-  }, []);
+  }, [topic]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -174,8 +175,14 @@ const GDSimulation: React.FC = () => {
 
       toast.success('Session analyzed and saved!');
       
-      // Store analysis for feedback page
-      sessionStorage.setItem('sessionAnalysis', JSON.stringify(analysis));
+      // Store analysis and session info for feedback page
+      const feedbackData = {
+        ...analysis,
+        topicTitle: topic.title,
+        duration: formatTime(timeElapsed),
+        participants: aiParticipants.length + 1
+      };
+      sessionStorage.setItem('sessionAnalysis', JSON.stringify(feedbackData));
       
       setTimeout(() => {
         navigate(`/feedback/${topicId}`);
